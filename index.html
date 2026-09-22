@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Punch Buddy V2.1</title>
+
+<style>
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    z-index:99999;
+
+    align-items:center;
+    justify-content:center;
+}
+
+.modalBox{
+    background:#222;
+    padding:25px;
+    border-radius:15px;
+    width:300px;
+    max-width:85%;
+    box-shadow:0 0 20px black;
+}
+
+.modalBox button{
+    margin:8px;
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+body{
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:Arial,sans-serif;
+    text-align:center;
+    overflow:hidden;
+}
+
+h1{
+    margin:10px;
+}
+
+#scoreboard{
+    font-size:18px;
+    margin:10px;
+}
+
+#hearts{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+#arena{
+    position:relative;
+    width:100%;
+    max-width:100vw;
+    height:calc(100vh - 220px);
+    min-height:400px;
+    overflow:hidden;
+}
+
+#combo{
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    color:gold;
+    font-size:28px;
+    font-weight:bold;
+    z-index:999;
+}
+
+.bag{
+    position:absolute;
+    background:#b22222;
+    border-radius:25px;
+    transform-origin:top;
+    box-shadow:0 0 15px rgba(0,0,0,.5);
+    cursor:pointer;
+    user-select:none;
+}
+
+.bag img{
+    width:70%;
+    height:70%;
+    object-fit:cover;
+    border-radius:50%;
+    margin-top:10px;
+}
+
+.hpText{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.hpBarContainer{
+    width:80%;
+    height:10px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#333;
+    margin:auto;
+}
+
+.hpBar{
+    width:100%;
+    height:100%;
+    background:limegreen;
+}
+
+#glove{
+    position:absolute;
+    right:20px;
+    bottom:100px;
+    font-size:70px;
+    pointer-events:none;
+}
+
+.punch{
+    animation:punch .25s ease;
+}
+
+@keyframes punch{
+    0%{transform:translateX(0);}
+    50%{transform:translateX(-150px);}
+    100%{transform:translateX(0);}
+}
+.timerText{
+    color:lime;
+    font-size:clamp(10px,2vw,14px);
+    font-weight:bold;
+}
+
+.typeText{
+    color:white;
+    font-size:clamp(10px,2vw,14px);
+    font-weight:bold;
+}
+
+.hpText{
+    font-size:clamp(10px,2vw,14px);
+    font-weight:bold;
+}
+
+#shop{
+    margin:10px;
+}
+
+#shop button{
+    margin:4px;
+    padding:8px 12px;
+    border:none;
+    border-radius:10px;
+    background:#222;
+    color:white;
+    cursor:pointer;
+}
+.bag::before{
+    content:"";
+    position:absolute;
+    top:-60px;
+    left:50%;
+    width:4px;
+    height:60px;
+    background:silver;
+    transform:translateX(-50%);
+}
+#shop{
+    margin:10px;
+    position:relative;
+    z-index:1000;
+}
+.newGameBtn{
+    background:#cc0000 !important;
+    color:white;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🥊 Punch Buddy</h1>
+
+<input type="file" id="upload" accept="image/*">
+
+<div id="scoreboard">
+
+<div>
+🏆 <span id="highScore">0</span>
+&nbsp;&nbsp;
+🎯 <span id="score">0</span>
+&nbsp;&nbsp;
+⭐ <span id="level">1</span>
+</div>
+
+<div>
+🪙 <span id="coins">0</span>
+&nbsp;&nbsp;
+🥊 <span id="bagCount">0</span>
+&nbsp;&nbsp;
+⚔️ <span id="swordCount">0</span>
+</div>
+
+</div>
+Sword: ⚔️ <span id="swordCount">0</span><br>
+<div id="shop">
+<button onclick="openRestartModal()">
+🔄 New Game
+</button>
+
+<button onclick="togglePause()">
+⏸️ Pause
+</button>
+<div id="activePowerups">
+No Powerups Active
+</div>
+<h3>🛒 Shop</h3>
+
+<button onclick="buyDoubleDamage()">
+⚔️ Double Damage Sword x30 (200 Coins)
+</button>
+
+<button onclick="buyFreezeTime()">
+❄️ Freeze Time (300 Coins)
+</button>
+
+<button onclick="buyRageMode()">
+🔥 Rage Mode (500 Coins)
+</button>
+
+<button onclick="spawnBossBag()">
+👹 Boss Bag (1000 Coins)
+</button>
+
+</div>
+<div id="hearts"></div>
+
+<div id="arena">
+    <div id="combo"></div>
+    <div id="bags"></div>
+    <div id="glove">🥊</div>
+</div>
+
+<script>
+let damageMultiplier = 1;
+let freezeActive = false;
+let rageActive = false;
+let score = Number(localStorage.score || 0);
+let highScore = Number(localStorage.highScore || 0);
+let level = Number(localStorage.level || 1);
+let hearts = Number(localStorage.hearts || 5);
+let coins = Number(localStorage.coins || 0);
+let swordHits = 0;
+let gamePaused = false;
+let uploadedPhoto =
+localStorage.photo || "";
+
+let combo = 0;
+let comboTimer;
+
+const arena =
+document.getElementById("arena");
+
+const bagsContainer =
+document.getElementById("bags");
+
+const glove =
+document.getElementById("glove");
+
+updateHearts();
+updateScoreboard();
+
+function saveGame(){
+
+    localStorage.score = score;
+    localStorage.level = level;
+    localStorage.hearts = hearts;
+    localStorage.coins = coins;
+    localStorage.photo = uploadedPhoto;
+
+    if(score > highScore){
+
+        highScore = score;
+        localStorage.highScore = highScore;
+    }
+}
+function keepInsideScreen(x, width){
+
+    const arenaWidth =
+    arena.clientWidth;
+
+    return Math.max(
+        10,
+        Math.min(
+            x,
+            arenaWidth - width - 10
+        )
+    );
+}
+function togglePause(){
+
+    gamePaused = !gamePaused;
+
+    document.getElementById(
+        "activePowerups"
+    ).innerHTML =
+    gamePaused
+    ? "⏸️ GAME PAUSED"
+    : "No Powerups Active";
+}
+function updateScoreboard(){
+
+    document.getElementById("score").textContent =
+    score;
+
+    document.getElementById("highScore").textContent =
+    highScore;
+
+    document.getElementById("level").textContent =
+    level;
+
+    document.getElementById("coins").textContent =
+    coins;
+
+    document.getElementById("bagCount").textContent =
+    document.querySelectorAll(".bag").length;
+
+    document.getElementById("swordCount").textContent =
+    swordHits;
+}
+
+function openRestartModal(){
+
+    gamePaused = true;
+
+    document.getElementById(
+        "restartModal"
+    ).style.display = "flex";
+}
+
+function closeRestartModal(){
+
+    gamePaused = false;
+
+    document.getElementById(
+        "restartModal"
+    ).style.display = "none";
+}
+
+function confirmNewGame(){
+
+    const savedHighScore =
+    localStorage.highScore || 0;
+
+    localStorage.clear();
+
+    localStorage.highScore =
+    savedHighScore;
+
+    location.reload();
+}
+function updateHearts(){
+
+    let text = "";
+
+    for(let i=0;i<5;i++){
+
+        if(i < hearts){
+            text += "❤️";
+        }else{
+            text += "🖤";
+        }
+    }
+
+    document.getElementById("hearts")
+    .textContent = text;
+}
+
+function popup(text,color,x,y){
+
+    const p =
+    document.createElement("div");
+
+    p.innerHTML = text;
+
+    p.style.position = "absolute";
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    p.style.color = color;
+    p.style.fontWeight = "bold";
+    p.style.fontSize = "24px";
+    p.style.pointerEvents = "none";
+
+    arena.appendChild(p);
+
+    setTimeout(()=>{
+
+        p.style.transition = "1s";
+        p.style.top = (y - 60) + "px";
+        p.style.opacity = "0";
+
+    },10);
+
+    setTimeout(()=>{
+        p.remove();
+    },1000);
+}
+function newGame(){
+
+    if(!confirm(
+        "Start a new game?"
+    )){
+        return;
+    }
+
+    const savedHighScore =
+    localStorage.highScore || 0;
+
+    localStorage.clear();
+
+    localStorage.highScore =
+    savedHighScore;
+
+    location.reload();
+}
+function createBag(){
+
+    const bag =
+    document.createElement("div");
+
+    bag.className = "bag";
+
+    let hp = 100 + level * 10;
+    let reward = 500;
+let timer = 30;
+
+if(level >= 25 && Math.random()<0.15){
+
+    hp = 500;
+    reward = 2000;
+    timer = 120;
+
+    bag.style.background = "purple";
+}
+if(level >= 50 && Math.random()<0.10){
+
+    hp = 1000;
+    reward = 5000;
+    timer = 90;
+
+    bag.style.background = "deepskyblue";
+}
+
+    bag.hp = hp;
+    bag.maxHp = hp;
+    bag.reward = reward;
+bag.timeLeft = timer;
+    const isMobile = window.innerWidth < 768;
+
+const size = Math.max(
+    70,
+    Math.min(
+        110,
+        window.innerWidth * 0.20
+    )
+);
+    bag.style.width = size+"px";
+    bag.style.height = size*1.25 +"px";
+if(size > arena.clientWidth * 0.4){
+
+    bag.style.width =
+    arena.clientWidth * 0.4 + "px";
+
+    bag.style.height =
+    arena.clientWidth * 0.5 + "px";
+}
+const actualWidth =
+parseFloat(bag.style.width);
+
+const maxLeft =
+Math.max(
+    10,
+    arena.clientWidth - actualWidth - 10
+);
+
+bag.style.left =
+Math.random() * maxLeft + "px";
+const rightEdge =
+parseFloat(bag.style.left) + actualWidth;
+
+if(rightEdge > arena.clientWidth){
+
+    bag.style.left =
+    (arena.clientWidth - actualWidth - 10)
+    + "px";
+}
+
+ const maxTop =
+Math.max(
+    20,
+    arena.clientHeight -
+    (size * 1.25) - 20
+);
+
+const minTop = 20;
+
+bag.style.top =
+(
+Math.random() *
+(maxTop - minTop)
++ minTop
+) + "px";
+
+    const img =
+    document.createElement("img");
+
+    if(uploadedPhoto){
+        img.src = uploadedPhoto;
+    }
+
+    const hpText =
+    document.createElement("div");
+
+    hpText.className = "hpText";
+    hpText.textContent =
+    hp + "/" + hp;
+const typeText =
+document.createElement("div");
+
+typeText.className = "typeText";
+
+if(reward === 500){
+    typeText.innerHTML = "🥊 NORMAL";
+}
+
+if(reward === 2000){
+    typeText.innerHTML = "👹 BOSS";
+}
+
+if(reward === 5000){
+    typeText.innerHTML = "💎 DIAMOND";
+}
+
+const timerText =
+document.createElement("div");
+
+timerText.className = "timerText";
+timerText.innerHTML =
+"⏳ " + timer;
+    const box =
+    document.createElement("div");
+
+    box.className =
+    "hpBarContainer";
+
+    const hpBar =
+    document.createElement("div");
+
+    hpBar.className =
+    "hpBar";
+
+    box.appendChild(hpBar);
+
+   bag.appendChild(img);
+bag.appendChild(typeText);
+bag.appendChild(timerText);
+bag.appendChild(hpText);
+bag.appendChild(box);
+
+    bag.addEventListener(
+    "click",
+    function(e){
+
+        e.stopPropagation();
+        punch(bag);
+    });
+bag.timerInterval =
+setInterval(()=>{
+
+if(
+    !freezeActive &&
+    !gamePaused
+){
+    bag.timeLeft--;
+}
+
+    timerText.innerHTML =
+    "⏳ " + bag.timeLeft;
+
+    if(bag.timeLeft < 15){
+        timerText.style.color =
+        "orange";
+    }
+
+    if(bag.timeLeft < 5){
+        timerText.style.color =
+        "red";
+    }
+
+    if(bag.timeLeft <= 0){
+
+        clearInterval(
+        bag.timerInterval);
+
+        const rect =
+        bag.getBoundingClientRect();
+
+        popup(
+            "💔 HEART LOST",
+            "red",
+            rect.left,
+            rect.top
+        );
+
+        hearts = Math.max(
+    0,
+    hearts - 1
+);
+
+        updateHearts();
+
+        bag.remove();
+
+        createBag();
+
+        saveGame();
+
+        if(hearts <= 0){
+            gameOver();
+localStorage.removeItem("coins");
+        }
+    }
+
+},1000);
+    bagsContainer.appendChild(bag);
+
+    updateScoreboard();
+}
+function randomDrop(x,y){
+showLoot("🎁",x,y);
+    const chance = Math.random();
+
+    if(chance > 0.20){
+        return;
+    }
+
+    if(chance < 0.01){
+
+        score += 10000;
+
+        popup(
+            "🌟 LEGENDARY +10000",
+            "gold",
+            x,
+            y
+        );
+
+        saveGame();
+        updateScoreboard();
+
+        return;
+    }
+
+    if(chance < 0.05){
+
+        hearts = Math.min(
+            5,
+            hearts + 1
+        );
+
+        popup(
+            "❤️ HEART",
+            "pink",
+            x,
+            y
+        );
+
+        updateHearts();
+    }
+
+    else if(chance < 0.10){
+
+        coins += 100;
+
+        popup(
+            "🪙 +100 COINS",
+            "gold",
+            x,
+            y
+        );
+    }
+
+    else if(chance < 0.15){
+
+        swordHits += 30;
+
+        document.getElementById(
+        "activePowerups"
+        ).innerHTML =
+        "⚔️ Sword x" + swordHits;
+
+
+        popup(
+            "⚔️ DOUBLE DAMAGE",
+            "lime",
+            x,
+            y
+        );
+
+        setTimeout(()=>{
+
+            damageMultiplier = 1;
+
+            document.getElementById(
+            "activePowerups"
+            ).innerHTML =
+            "No Powerups Active";
+
+        },15000);
+    }
+
+    else if(chance < 0.20){
+
+        freezeActive = true;
+
+        document.getElementById(
+        "activePowerups"
+        ).innerHTML =
+        "❄️ Freeze Time Drop";
+
+        popup(
+            "❄️ FREEZE",
+            "cyan",
+            x,
+            y
+        );
+
+        setTimeout(()=>{
+
+            freezeActive = false;
+
+            document.getElementById(
+            "activePowerups"
+            ).innerHTML =
+            "No Powerups Active";
+
+        },10000);
+    }
+
+    else if(chance < 0.24){
+
+        rageActive = true;
+
+        document.getElementById(
+        "activePowerups"
+        ).innerHTML =
+        "🔥 Rage Mode Drop";
+
+        popup(
+            "🔥 RAGE MODE",
+            "orange",
+            x,
+            y
+        );
+
+        setTimeout(()=>{
+
+            rageActive = false;
+
+            document.getElementById(
+            "activePowerups"
+            ).innerHTML =
+            "No Powerups Active";
+
+        },15000);
+    }
+
+    else {
+
+        window.instantKO = true;
+
+        popup(
+            "💣 INSTANT KO",
+            "red",
+            x,
+            y
+        );
+    }
+
+    saveGame();
+    updateScoreboard();
+}
+
+function punch(bag){
+
+if(gamePaused){
+    return;
+}
+    if(navigator.vibrate){
+        navigator.vibrate(25);
+    }
+
+    glove.classList.remove("punch");
+    void glove.offsetWidth;
+    glove.classList.add("punch");
+
+    clearTimeout(comboTimer);
+
+    combo++;
+
+    comboTimer =
+    setTimeout(()=>{
+
+        combo = 0;
+
+        document.getElementById("combo")
+        .textContent = "";
+
+    },3000);
+
+    bag.animate([
+        {transform:"rotate(0deg)"},
+        {transform:"rotate(10deg)"},
+        {transform:"rotate(-10deg)"},
+        {transform:"rotate(0deg)"}
+    ],{
+        duration:350
+    });
+
+   let hit =
+Math.floor(Math.random()*8)+1;
+if(window.instantKO){
+
+    hit = bag.hp;
+
+    window.instantKO = false;
+}
+if(swordHits > 0){
+
+    hit *= 2;
+
+    swordHits--;
+
+    document.getElementById(
+        "activePowerups"
+    ).innerHTML =
+    "⚔️ Sword x" + swordHits;
+
+    if(swordHits <= 0){
+
+        document.getElementById(
+            "activePowerups"
+        ).innerHTML =
+        "No Powerups Active";
+    }
+}
+if(rageActive){
+
+    hit *= 3;
+}
+
+    const critical =
+    Math.random()<0.10;
+
+    if(critical){
+
+        hit *= 5;
+
+        document.getElementById("combo")
+        .innerHTML =
+        "⚡ CRITICAL!";
+    }
+    else{
+
+        document.getElementById("combo")
+        .innerHTML =
+        "🔥 Combo x"+combo;
+    }
+
+    bag.hp -= hit;
+    score += hit*10;
+
+    const rect =
+    bag.getBoundingClientRect();
+
+    popup(
+        "💥 -" + hit,
+        "yellow",
+        rect.left + 50,
+        rect.top
+    );
+const hpText =
+bag.querySelector(".hpText");
+
+const hpBar =
+bag.querySelector(".hpBar");
+   if(bag.classList.contains("superBoss")){
+
+    hpText.textContent =
+    "👹 " +
+    Math.max(0,bag.hp)
+    + "/" +
+    bag.maxHp;
+
+}else{
+
+    hpText.textContent =
+    Math.max(0,bag.hp)
+    + "/" +
+    bag.maxHp;
+}
+    const percent =
+    Math.max(0,
+    bag.hp /
+    bag.maxHp *100);
+
+    hpBar.style.width =
+    percent + "%";
+
+    if(percent < 60)
+        hpBar.style.background =
+        "orange";
+
+    if(percent < 30)
+        hpBar.style.background =
+        "red";
+
+    level =
+    Math.floor(score/2500)+1;
+
+    const desiredBags =
+    Math.min(
+      10,
+      Math.floor(level/10)+1
+    );
+
+    while(
+      document.querySelectorAll(".bag")
+      .length < desiredBags
+    ){
+      createBag();
+    }
+
+    if(bag.hp <= 0){
+
+        score += bag.reward;
+
+coins += Math.floor(
+    bag.reward / 10
+);
+
+        popup(
+          "💀 KO +" + bag.reward,
+          "gold",
+          rect.left,
+          rect.top
+        );
+clearInterval(
+bag.timerInterval
+);
+
+showLoot(
+    "🎁",
+    bag.offsetLeft,
+    bag.offsetTop
+);
+
+bag.remove();
+
+createBag();
+updateScoreboard();
+updateHearts();
+    }
+
+    saveGame();
+    updateScoreboard();
+}
+
+arena.addEventListener(
+"click",
+function(e){
+if(gamePaused){
+    return;
+}
+    if(e.target.closest(".bag"))
+        return;
+
+    hearts = Math.max(
+    0,
+    hearts - 1
+);
+
+    combo = 0;
+
+    document.getElementById("combo")
+    .textContent = "";
+
+    updateHearts();
+
+    saveGame();
+
+    if(hearts <= 0){
+
+        gameOver();
+    }
+});
+function buyRageMode(){
+
+    if(coins < 500){
+        return;
+    }
+
+    coins -= 500;
+document.getElementById("activePowerups")
+.innerHTML =
+"🔥 Rage Mode Active";
+    rageActive = true;
+
+    popup(
+        "🔥 RAGE MODE",
+        "orange",
+        200,
+        200
+    );
+
+    updateScoreboard();
+    saveGame();
+
+    setTimeout(()=>{
+
+    rageActive = false;
+
+    document.getElementById(
+      "activePowerups"
+    ).innerHTML = "";
+
+},15000);
+}
+function spawnBossBag(){
+if(document.querySelector(".superBoss")){
+
+    popup(
+        "👹 Boss Already Exists",
+        "red",
+        200,
+        200
+    );
+
+    return;
+}
+
+    if(coins < 1000){
+        return;
+    }
+
+    coins -= 1000;
+
+    const bag =
+    document.createElement("div");
+
+bag.className = "bag";
+bag.classList.add("superBoss");
+    bag.hp = 3000;
+    bag.maxHp = 3000;
+    bag.reward = 10000;
+    bag.timeLeft = 180;
+
+    bag.style.background = "darkred";
+
+    const bossSize = Math.min(
+    window.innerWidth * 0.30,
+    180
+);
+
+bag.style.width =
+bossSize + "px";
+
+bag.style.height =
+(bossSize * 1.25) + "px";
+
+   const existingBags =
+document.querySelectorAll(".bag").length;
+
+const maxLeft =
+arena.clientWidth - bossSize - 20;
+
+bag.style.left =
+(Math.random() * maxLeft) + "px";
+const bossRightEdge =
+parseFloat(bag.style.left) + bossSize;
+
+if(bossRightEdge > arena.clientWidth){
+
+    bag.style.left =
+    (arena.clientWidth - bossSize - 10)
+    + "px";
+}
+
+  bag.style.top =
+Math.random() * 120 + "px";
+
+    const img =
+    document.createElement("img");
+
+    if(uploadedPhoto){
+        img.src = uploadedPhoto;
+    }
+
+    const typeText =
+    document.createElement("div");
+
+    typeText.className = "typeText";
+    typeText.innerHTML = "👹 SUPER BOSS";
+
+    const timerText =
+    document.createElement("div");
+
+    timerText.className = "timerText";
+    timerText.innerHTML = "⏳ 180";
+
+    const hpText =
+    document.createElement("div");
+
+    hpText.className = "hpText";
+    hpText.innerHTML = "3000/3000";
+
+    const hpBox =
+    document.createElement("div");
+
+    hpBox.className = "hpBarContainer";
+
+    const hpBar =
+    document.createElement("div");
+
+    hpBar.className = "hpBar";
+
+    hpBox.appendChild(hpBar);
+
+    bag.appendChild(img);
+    bag.appendChild(typeText);
+    bag.appendChild(timerText);
+    bag.appendChild(hpText);
+    bag.appendChild(hpBox);
+
+    bag.addEventListener("click",(e)=>{
+        e.stopPropagation();
+        punch(bag);
+    });
+
+    bagsContainer.appendChild(bag);
+
+    updateScoreboard();
+    saveGame();
+bag.timerInterval = setInterval(()=>{
+
+    if(!freezeActive){
+
+        bag.timeLeft--;
+    }
+
+    timerText.innerHTML =
+    "⏳ " + bag.timeLeft;
+
+    if(bag.timeLeft <= 0){
+
+        clearInterval(bag.timerInterval);
+
+       hearts = Math.max(
+    0,
+    hearts - 1
+);
+
+        updateHearts();
+
+        bag.remove();
+
+        if(hearts <= 0){
+            gameOver();
+        }
+    }
+
+},1000);
+}
+function showLoot(item,x,y){
+
+    const loot =
+    document.createElement("div");
+
+    loot.innerHTML = item;
+
+    loot.style.position =
+    "absolute";
+
+    loot.style.left =
+    x + "px";
+
+    loot.style.top =
+    y + "px";
+
+    loot.style.fontSize =
+    "40px";
+loot.style.zIndex = "9999";
+loot.style.pointerEvents = "none";
+    arena.appendChild(loot);
+
+    setTimeout(()=>{
+
+        loot.style.transition =
+        "1s";
+
+        loot.style.top =
+(y + 120) + "px";
+
+        loot.style.opacity =
+        "0";
+
+    },10);
+
+    setTimeout(()=>{
+
+        loot.remove();
+
+    },1000);
+
+}
+function gameOver(){
+
+    document.getElementById("combo")
+    .innerHTML =
+    "☠️ GAME OVER";
+
+    if(score > highScore){
+
+        highScore = score;
+        localStorage.highScore =
+        highScore;
+    }
+
+    localStorage.removeItem("score");
+    localStorage.removeItem("level");
+    localStorage.removeItem("hearts");
+localStorage.removeItem("coins");
+    setTimeout(()=>{
+
+        location.reload();
+
+    },3000);
+}
+function buyDoubleDamage(){
+
+    if(coins < 200){
+        return;
+    }
+
+    coins -= 200;
+
+    swordHits = 30;
+
+    document.getElementById(
+        "activePowerups"
+    ).innerHTML =
+    "⚔️ Sword x30";
+
+    popup(
+        "⚔️ SWORD x30",
+        "lime",
+        200,
+        200
+    );
+
+    updateScoreboard();
+    saveGame();
+}
+function buyFreezeTime(){
+
+
+    if(coins < 300){
+        return;
+    }
+
+    coins -= 300;
+document.getElementById("activePowerups")
+.innerHTML =
+"❄️ Freeze Time Active";
+    freezeActive = true;
+
+    popup(
+        "❄️ TIME FROZEN",
+        "cyan",
+        200,
+        200
+    );
+
+    updateScoreboard();
+    saveGame();
+document.getElementById(
+    "swordCount"
+).textContent = swordHits;
+setTimeout(()=>{
+
+    freezeActive = false;
+
+    document.getElementById(
+        "activePowerups"
+    ).innerHTML = "";
+
+},10000);
+}
+document.getElementById("upload")
+.addEventListener(
+"change",
+function(e){
+
+    const file =
+    e.target.files[0];
+
+    if(!file) return;
+
+    const reader =
+    new FileReader();
+
+    reader.onload =
+    function(){
+
+        uploadedPhoto =
+        reader.result;
+
+        localStorage.photo =
+        uploadedPhoto;
+
+        document
+        .querySelectorAll(".bag img")
+        .forEach(img=>{
+
+            img.src =
+            uploadedPhoto;
+        });
+
+        saveGame();
+    };
+
+    reader.readAsDataURL(file);
+});
+
+createBag();
+updateScoreboard();
+updateHearts();
+
+</script>
+<div id="restartModal" class="modal">
+
+    <div class="modalBox">
+
+        <h2>⚠️ Start New Game?</h2>
+
+        <p>
+            Your score, coins, level and hearts
+            will be reset.
+        </p>
+
+        <button onclick="confirmNewGame()">
+            ✅ Yes
+        </button>
+
+        <button onclick="closeRestartModal()">
+            ❌ No
+        </button>
+
+    </div>
+
+</div>
+</body>
+</html>
