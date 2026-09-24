@@ -1,246 +1,428 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Punch Buddy V2.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Punch Buddy V3.3 - Quests & Special Bags</title>
 
 <style>
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.75);
-    z-index:99999;
-
-    align-items:center;
-    justify-content:center;
+* {
+    box-sizing: border-box;
+    touch-action: manipulation;
 }
 
-.modalBox{
-    background:#222;
-    padding:25px;
-    border-radius:15px;
-    width:300px;
-    max-width:85%;
-    box-shadow:0 0 20px black;
+body {
+    margin: 0;
+    background: #0d0d11;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    overflow: hidden;
+    user-select: none;
 }
 
-.modalBox button{
-    margin:8px;
-    padding:10px 18px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-}
-body{
-    margin:0;
-    background:#111;
-    color:white;
-    font-family:Arial,sans-serif;
-    text-align:center;
-    overflow:hidden;
+h1 {
+    margin: 8px 0 2px 0;
+    font-size: 22px;
+    letter-spacing: 1px;
 }
 
-h1{
-    margin:10px;
+#topControls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
 }
 
-#scoreboard{
-    font-size:18px;
-    margin:10px;
+#topControls button, label {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #ccc;
+    cursor: pointer;
 }
 
-#hearts{
-    font-size:28px;
-    margin-bottom:10px;
+#scoreboard {
+    font-size: 13px;
+    margin: 2px auto;
+    background: #16161f;
+    padding: 6px 12px;
+    border-radius: 10px;
+    display: inline-block;
+    border: 1px solid #2a2a3a;
 }
 
-#arena{
-    position:relative;
-    width:100%;
-    max-width:100vw;
-    height:calc(100vh - 220px);
-    min-height:400px;
-    overflow:hidden;
+#scoreboard div {
+    margin: 2px 0;
 }
 
-#combo{
-    position:absolute;
-    top:10px;
-    left:50%;
-    transform:translateX(-50%);
-    color:gold;
-    font-size:28px;
-    font-weight:bold;
-    z-index:999;
+#questContainer {
+    background: #1c1c2a;
+    border: 1px solid #ffcc00;
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin: 4px auto;
+    width: 280px;
+    font-size: 11px;
+    color: #ffdd66;
 }
 
-.bag{
-    position:absolute;
-    background:#b22222;
-    border-radius:25px;
-    transform-origin:top;
-    box-shadow:0 0 15px rgba(0,0,0,.5);
-    cursor:pointer;
-    user-select:none;
+#hearts {
+    font-size: 20px;
+    margin: 2px 0;
 }
 
-.bag img{
-    width:70%;
-    height:70%;
-    object-fit:cover;
-    border-radius:50%;
-    margin-top:10px;
+#feverBarContainer {
+    width: 200px;
+    height: 12px;
+    background: #222;
+    border-radius: 6px;
+    margin: 4px auto;
+    overflow: hidden;
+    border: 1px solid #444;
+    position: relative;
 }
 
-.hpText{
-    font-size:12px;
-    font-weight:bold;
+#feverBar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff8c00, #ff0055);
+    transition: width 0.1s linear;
 }
 
-.hpBarContainer{
-    width:80%;
-    height:10px;
-    border-radius:10px;
-    overflow:hidden;
-    background:#333;
-    margin:auto;
+#feverText {
+    position: absolute;
+    inset: 0;
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 12px;
+    text-shadow: 0 0 2px black;
 }
 
-.hpBar{
-    width:100%;
-    height:100%;
-    background:limegreen;
+#shop {
+    margin: 2px;
+    position: relative;
+    z-index: 1000;
 }
 
-#glove{
-    position:absolute;
-    right:20px;
-    bottom:100px;
-    font-size:70px;
-    pointer-events:none;
+#shop button {
+    margin: 2px;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 6px;
+    background: #232333;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    transition: background 0.2s, transform 0.1s;
 }
 
-.punch{
-    animation:punch .25s ease;
+#shop button:active {
+    transform: scale(0.95);
 }
 
-@keyframes punch{
-    0%{transform:translateX(0);}
-    50%{transform:translateX(-150px);}
-    100%{transform:translateX(0);}
-}
-.timerText{
-    color:lime;
-    font-size:clamp(10px,2vw,14px);
-    font-weight:bold;
+#shop button:hover {
+    background: #33334d;
 }
 
-.typeText{
-    color:white;
-    font-size:clamp(10px,2vw,14px);
-    font-weight:bold;
+#activePowerups {
+    color: #00ffcc;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 2px 0;
+    min-height: 16px;
 }
 
-.hpText{
-    font-size:clamp(10px,2vw,14px);
-    font-weight:bold;
+#arena {
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - 310px);
+    min-height: 300px;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #181824 0%, #08080c 100%);
+    border-top: 2px solid #2a2a3d;
+    box-shadow: inset 0 0 0px red;
+    transition: box-shadow 0.2s;
 }
 
-#shop{
-    margin:10px;
+#arena.damageFlash {
+    box-shadow: inset 0 0 30px #ff0000;
 }
 
-#shop button{
-    margin:4px;
-    padding:8px 12px;
-    border:none;
-    border-radius:10px;
-    background:#222;
-    color:white;
-    cursor:pointer;
+#arena.feverFlash {
+    box-shadow: inset 0 0 30px #ffd700;
 }
-.bag::before{
-    content:"";
-    position:absolute;
-    top:-60px;
-    left:50%;
-    width:4px;
-    height:60px;
-    background:silver;
-    transform:translateX(-50%);
+
+#arena.shake {
+    animation: arenaShake 0.15s ease-in-out 2;
 }
-#shop{
-    margin:10px;
-    position:relative;
-    z-index:1000;
+
+@keyframes arenaShake {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-5px, 5px); }
+    50% { transform: translate(5px, -5px); }
+    75% { transform: translate(-5px, -5px); }
+    100% { transform: translate(0, 0); }
 }
-.newGameBtn{
-    background:#cc0000 !important;
-    color:white;
-    font-weight:bold;
+
+#combo {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: gold;
+    font-size: 26px;
+    font-weight: bold;
+    z-index: 999;
+    pointer-events: none;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
 }
+
+/* Base Bag Styles */
+.bag {
+    position: absolute;
+    background: #a31c1c;
+    border-radius: 20px;
+    transform-origin: top center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-style: space-evenly;
+    padding: 4px;
+    transition: filter 0.2s;
+}
+
+/* Tiered Bag Specifics */
+.bag.elite {
+    background: linear-gradient(135deg, #1e90ff, #00008b);
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 12px #00ffff;
+}
+
+.bag.boss {
+    background: linear-gradient(135deg, #8b0000, #4a0000);
+    border: 2px solid #ff4500;
+    box-shadow: 0 0 15px #ff4500;
+}
+
+.bag.champion {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 20px #ffd700;
+    color: black;
+}
+
+.bag.bomb {
+    background: radial-gradient(circle, #333 0%, #000 100%);
+    border: 2px dashed #ff0000;
+    box-shadow: 0 0 15px #ff0000;
+}
+
+.bag.goblin {
+    background: linear-gradient(135deg, #ffea00, #ffaa00);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 15px #ffea00;
+    color: black;
+}
+
+.bag::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    width: 4px;
+    height: 60px;
+    background: #666;
+    transform: translateX(-50%);
+}
+
+.bag img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    pointer-events: none;
+}
+
+.typeText, .timerText, .hpText {
+    font-size: clamp(9px, 2.2vw, 11px);
+    font-weight: bold;
+    line-height: 1.1;
+    pointer-events: none;
+}
+
+.timerText { color: lime; }
+.typeText { color: white; }
+.hpText { color: #fff; }
+
+.hpBarContainer {
+    width: 85%;
+    height: 6px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #222;
+    pointer-events: none;
+}
+
+.hpBar {
+    width: 100%;
+    height: 100%;
+    background: limegreen;
+    transition: width 0.1s linear;
+}
+
+.bullseye {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 3px dashed #ff0055;
+    border-radius: 50%;
+    background: rgba(255, 0, 85, 0.3);
+    animation: spin 2s linear infinite;
+    z-index: 100;
+    pointer-events: none;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+#glove {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 55px;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.punch {
+    animation: punchAnim 0.2s ease;
+}
+
+@keyframes punchAnim {
+    0% { transform: translateX(0) scale(1); }
+    50% { transform: translateX(-100px) scale(1.3); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+.particle {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 9999;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalBox {
+    background: #1a1a24;
+    padding: 20px;
+    border-radius: 15px;
+    width: 320px;
+    max-width: 90%;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    border: 1px solid #33334d;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modalBox button {
+    margin: 5px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.upgradeRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    background: #252535;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.upgradeRow button {
+    background: #ff9900;
+    color: black;
+}
+
+.confirmBtn { background: #cc0000; color: white; }
+.cancelBtn { background: #555; color: white; }
 </style>
 </head>
 
 <body>
 
-<h1>🥊 Punch Buddy</h1>
+<h1>🥊 Punch Buddy V3.3</h1>
 
-<input type="file" id="upload" accept="image/*">
+<div id="topControls">
+    <label for="upload">📷 Custom Face</label>
+    <input type="file" id="upload" accept="image/*" style="display:none">
+    <button onclick="toggleAudio()" id="audioBtn">🔊 Sound: ON</button>
+    <button onclick="toggleVib()" id="vibBtn">📳 Vib: ON</button>
+    <button onclick="openUpgradesModal()">🏋️ Upgrades & Skins</button>
+    <button onclick="openRestartModal()">🔄 New Game</button>
+    <button onclick="togglePause()" id="pauseBtn">⏸️ Pause</button>
+</div>
 
 <div id="scoreboard">
-
-<div>
-🏆 <span id="highScore">0</span>
-&nbsp;&nbsp;
-🎯 <span id="score">0</span>
-&nbsp;&nbsp;
-⭐ <span id="level">1</span>
+    <div>
+        🏆 High: <span id="highScore">0</span>
+        &nbsp;|&nbsp;
+        🎯 Score: <span id="score">0</span>
+        &nbsp;|&nbsp;
+        ⭐ Level: <span id="level">1</span>
+    </div>
+    <div>
+        🪙 Coins: <span id="coins">0</span>
+        &nbsp;|&nbsp;
+        🥊 Bags: <span id="bagCount">0</span>
+        &nbsp;|&nbsp;
+        ⚔️ Sword: <span id="swordCount">0</span>
+    </div>
 </div>
 
-<div>
-🪙 <span id="coins">0</span>
-&nbsp;&nbsp;
-🥊 <span id="bagCount">0</span>
-&nbsp;&nbsp;
-⚔️ <span id="swordCount">0</span>
+<div id="questContainer">
+    <strong>🎯 QUEST:</strong> <span id="questText">Loading Quest...</span>
 </div>
 
+<div id="feverBarContainer">
+    <div id="feverBar"></div>
+    <div id="feverText">🔥 FEVER METER</div>
 </div>
-Sword: ⚔️ <span id="swordCount">0</span><br>
+
 <div id="shop">
-<button onclick="openRestartModal()">
-🔄 New Game
-</button>
+    <div id="activePowerups">No Powerups Active</div>
 
-<button onclick="togglePause()">
-⏸️ Pause
-</button>
-<div id="activePowerups">
-No Powerups Active
+    <button onclick="buyDoubleDamage()">⚔️ Sword 2x Dmg (30 Hits) (200 🪙)</button>
+    <button onclick="buyFreezeTime()">❄️ Freeze (300 🪙)</button>
+    <button onclick="buyRageMode()">🔥 Rage Mode (500 🪙)</button>
+    <button onclick="spawnBossBag()">👹 Boss (1000 🪙)</button>
 </div>
-<h3>🛒 Shop</h3>
 
-<button onclick="buyDoubleDamage()">
-⚔️ Double Damage Sword x30 (200 Coins)
-</button>
-
-<button onclick="buyFreezeTime()">
-❄️ Freeze Time (300 Coins)
-</button>
-
-<button onclick="buyRageMode()">
-🔥 Rage Mode (500 Coins)
-</button>
-
-<button onclick="spawnBossBag()">
-👹 Boss Bag (1000 Coins)
-</button>
-
-</div>
 <div id="hearts"></div>
 
 <div id="arena">
@@ -249,1133 +431,788 @@ No Powerups Active
     <div id="glove">🥊</div>
 </div>
 
+<!-- Modals -->
+<div id="restartModal" class="modal">
+    <div class="modalBox">
+        <h2>⚠️ Start New Game?</h2>
+        <p>Your score, coins, level, and upgrades will reset.</p>
+        <button class="confirmBtn" onclick="confirmNewGame()">✅ Yes</button>
+        <button class="cancelBtn" onclick="closeModal('restartModal')">❌ No</button>
+    </div>
+</div>
+
+<div id="upgradesModal" class="modal">
+    <div class="modalBox">
+        <h2>🏋️ Permanent Upgrades</h2>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Base Power</strong><br>
+                <small>Lvl <span id="basePwrLvl">1</span> (+<span id="basePwrBonus">0</span> dmg)</small>
+            </div>
+            <button onclick="buyUpgrade('power')"><span id="powerCost">150</span> 🪙</button>
+        </div>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Crit Chance</strong><br>
+                <small>Lvl <span id="critLvl">1</span> (<span id="critBonus">10</span>%)</small>
+            </div>
+            <button onclick="buyUpgrade('crit')"><span id="critCost">200</span> 🪙</button>
+        </div>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Auto Glove</strong><br>
+                <small>Hits bags auto/sec (<span id="autoLvl">0</span>)</small>
+            </div>
+            <button onclick="buyUpgrade('auto')"><span id="autoCost">500</span> 🪙</button>
+        </div>
+
+        <h3>🥊 Glove Skins</h3>
+        <div style="display:flex; justify-style:space-around; margin-top:5px;">
+            <button onclick="setGloveSkin('🥊')">🥊 Red</button>
+            <button onclick="setGloveSkin('⚡')">⚡ Bolt</button>
+            <button onclick="setGloveSkin('🪙')">🪙 Gold</button>
+            <button onclick="setGloveSkin('🐲')">🐲 Dragon</button>
+        </div>
+        <br>
+        <button class="cancelBtn" onclick="closeModal('upgradesModal')">Close</button>
+    </div>
+</div>
+
 <script>
-let damageMultiplier = 1;
+// --- AUDIO SYNTHESIS ---
+let audioCtx = null;
+let soundEnabled = true;
+let vibEnabled = true;
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playSound(type) {
+    if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+
+    if (type === "punch") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.1);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === "crit") {
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+    } else if (type === "ko") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now); osc.stop(now + 0.35);
+    } else if (type === "coin") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.setValueAtTime(1200, now + 0.05);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    } else if (type === "explosion") {
+        osc.type = "square";
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
+        gain.gain.setValueAtTime(0.9, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now); osc.stop(now + 0.4);
+    }
+}
+
+function toggleAudio() {
+    soundEnabled = !soundEnabled;
+    document.getElementById("audioBtn").textContent = "🔊 Sound: " + (soundEnabled ? "ON" : "OFF");
+}
+
+function toggleVib() {
+    vibEnabled = !vibEnabled;
+    document.getElementById("vibBtn").textContent = "📳 Vib: " + (vibEnabled ? "ON" : "OFF");
+}
+
+function triggerVib(ms) {
+    if (vibEnabled && navigator.vibrate) navigator.vibrate(ms);
+}
+
+// --- GAME STATE ---
+let score = Number(localStorage.score) || 0;
+let highScore = Number(localStorage.highScore) || 0;
+let level = Number(localStorage.level) || 1;
+let hearts = Number(localStorage.hearts) || 5;
+let coins = Number(localStorage.coins) || 0;
+let swordHits = Number(localStorage.swordHits) || 0;
+let totalKills = Number(localStorage.totalKills) || 0;
+let gamePaused = false;
+let uploadedPhoto = localStorage.photo || "";
+
+// Upgrades & Custom Skins
+let upgPower = Number(localStorage.upgPower) || 0;
+let upgCrit = Number(localStorage.upgCrit) || 0;
+let upgAuto = Number(localStorage.upgAuto) || 0;
+let gloveSkin = localStorage.gloveSkin || "🥊";
+
+// Fever Mechanics
+let feverPoints = 0;
+let feverActive = false;
+
+// Multipliers & Active Buffs
 let freezeActive = false;
 let rageActive = false;
-let score = Number(localStorage.score || 0);
-let highScore = Number(localStorage.highScore || 0);
-let level = Number(localStorage.level || 1);
-let hearts = Number(localStorage.hearts || 5);
-let coins = Number(localStorage.coins || 0);
-let swordHits = 0;
-let gamePaused = false;
-let uploadedPhoto =
-localStorage.photo || "";
-
 let combo = 0;
 let comboTimer;
 
-const arena =
-document.getElementById("arena");
+// Quest Tracker State
+let questsList = [
+    { type: 'crit', target: 5, progress: 0, text: 'Landing 5 Critical Hits', reward: 300 },
+    { type: 'ko', target: 4, progress: 0, text: 'KO 4 Bags', reward: 250 },
+    { type: 'bullseye', target: 3, progress: 0, text: 'Hit 3 Bullseyes', reward: 400 }
+];
+let currentQuestIndex = 0;
 
-const bagsContainer =
-document.getElementById("bags");
+const arena = document.getElementById("arena");
+const bagsContainer = document.getElementById("bags");
+const glove = document.getElementById("glove");
 
-const glove =
-document.getElementById("glove");
-
+glove.textContent = gloveSkin;
 updateHearts();
 updateScoreboard();
+updateUpgradesUI();
+updateActivePowerupsUI();
+updateQuestUI();
 
-function saveGame(){
+// Auto Glove Interval
+setInterval(() => {
+    if (upgAuto > 0 && !gamePaused) {
+        const bags = document.querySelectorAll(".bag:not(.bomb)");
+        if (bags.length > 0) {
+            const randomBag = bags[Math.floor(Math.random() * bags.length)];
+            punch(randomBag, true);
+        }
+    }
+}, 1000);
 
+function saveGame() {
     localStorage.score = score;
     localStorage.level = level;
     localStorage.hearts = hearts;
     localStorage.coins = coins;
+    localStorage.swordHits = swordHits;
+    localStorage.totalKills = totalKills;
     localStorage.photo = uploadedPhoto;
+    localStorage.upgPower = upgPower;
+    localStorage.upgCrit = upgCrit;
+    localStorage.upgAuto = upgAuto;
+    localStorage.gloveSkin = gloveSkin;
 
-    if(score > highScore){
-
+    if (score > highScore) {
         highScore = score;
         localStorage.highScore = highScore;
     }
 }
-function keepInsideScreen(x, width){
 
-    const arenaWidth =
-    arena.clientWidth;
-
-    return Math.max(
-        10,
-        Math.min(
-            x,
-            arenaWidth - width - 10
-        )
-    );
-}
-function togglePause(){
-
+function togglePause() {
     gamePaused = !gamePaused;
-
-    document.getElementById(
-        "activePowerups"
-    ).innerHTML =
-    gamePaused
-    ? "⏸️ GAME PAUSED"
-    : "No Powerups Active";
-}
-function updateScoreboard(){
-
-    document.getElementById("score").textContent =
-    score;
-
-    document.getElementById("highScore").textContent =
-    highScore;
-
-    document.getElementById("level").textContent =
-    level;
-
-    document.getElementById("coins").textContent =
-    coins;
-
-    document.getElementById("bagCount").textContent =
-    document.querySelectorAll(".bag").length;
-
-    document.getElementById("swordCount").textContent =
-    swordHits;
+    document.getElementById("pauseBtn").textContent = gamePaused ? "▶️ Resume" : "⏸️ Pause";
+    if (gamePaused) {
+        document.getElementById("activePowerups").innerHTML = "⏸️ GAME PAUSED";
+    } else {
+        updateActivePowerupsUI();
+    }
 }
 
-function openRestartModal(){
+function updateActivePowerupsUI() {
+    let activeText = [];
+    if (swordHits > 0) activeText.push("⚔️ Sword 2x Dmg (" + swordHits + " hits)");
+    if (rageActive) activeText.push("🔥 Rage 3x Dmg");
+    if (freezeActive) activeText.push("❄️ Freeze Active");
 
-    gamePaused = true;
-
-    document.getElementById(
-        "restartModal"
-    ).style.display = "flex";
+    document.getElementById("activePowerups").innerHTML = activeText.length > 0 ? activeText.join(" | ") : "No Powerups Active";
 }
 
-function closeRestartModal(){
-
-    gamePaused = false;
-
-    document.getElementById(
-        "restartModal"
-    ).style.display = "none";
+function updateScoreboard() {
+    document.getElementById("score").textContent = score;
+    document.getElementById("highScore").textContent = highScore;
+    document.getElementById("level").textContent = level;
+    document.getElementById("coins").textContent = coins;
+    document.getElementById("bagCount").textContent = document.querySelectorAll(".bag").length;
+    document.getElementById("swordCount").textContent = swordHits;
 }
 
-function confirmNewGame(){
+function updateQuestUI() {
+    let q = questsList[currentQuestIndex];
+    document.getElementById("questText").textContent = `${q.text} (${q.progress}/${q.target}) - Reward: ${q.reward} 🪙`;
+}
 
-    const savedHighScore =
-    localStorage.highScore || 0;
+function advanceQuestProgress(type) {
+    let q = questsList[currentQuestIndex];
+    if (q.type === type) {
+        q.progress++;
+        if (q.progress >= q.target) {
+            coins += q.reward;
+            popup("🎯 QUEST COMPLETE! +" + q.reward + "🪙", "gold", arena.clientWidth / 2 - 100, 80);
+            q.progress = 0;
+            currentQuestIndex = (currentQuestIndex + 1) % questsList.length;
+        }
+        updateQuestUI();
+    }
+}
 
+function openRestartModal() { document.getElementById("restartModal").style.display = "flex"; gamePaused = true; }
+function openUpgradesModal() { updateUpgradesUI(); document.getElementById("upgradesModal").style.display = "flex"; gamePaused = true; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; gamePaused = false; updateActivePowerupsUI(); }
+
+function confirmNewGame() {
+    const savedHighScore = localStorage.highScore || 0;
     localStorage.clear();
-
-    localStorage.highScore =
-    savedHighScore;
-
+    localStorage.highScore = savedHighScore;
     location.reload();
 }
-function updateHearts(){
 
+function updateHearts() {
     let text = "";
-
-    for(let i=0;i<5;i++){
-
-        if(i < hearts){
-            text += "❤️";
-        }else{
-            text += "🖤";
-        }
-    }
-
-    document.getElementById("hearts")
-    .textContent = text;
+    for (let i = 0; i < 5; i++) text += (i < hearts) ? "❤️" : "🖤";
+    document.getElementById("hearts").textContent = text;
 }
 
-function popup(text,color,x,y){
+function flashDamage() {
+    arena.classList.add("damageFlash");
+    setTimeout(() => arena.classList.remove("damageFlash"), 300);
+}
 
-    const p =
-    document.createElement("div");
+function setGloveSkin(skin) {
+    gloveSkin = skin;
+    glove.textContent = skin;
+    saveGame();
+}
 
+function updateUpgradesUI() {
+    document.getElementById("basePwrLvl").textContent = upgPower + 1;
+    document.getElementById("basePwrBonus").textContent = upgPower * 5;
+    document.getElementById("powerCost").textContent = (upgPower + 1) * 150;
+
+    document.getElementById("critLvl").textContent = upgCrit + 1;
+    document.getElementById("critBonus").textContent = 10 + (upgCrit * 5);
+    document.getElementById("critCost").textContent = (upgCrit + 1) * 200;
+
+    document.getElementById("autoLvl").textContent = upgAuto;
+    document.getElementById("autoCost").textContent = (upgAuto + 1) * 500;
+}
+
+function buyUpgrade(type) {
+    if (type === 'power') {
+        let cost = (upgPower + 1) * 150;
+        if (coins >= cost) { coins -= cost; upgPower++; }
+    } else if (type === 'crit') {
+        let cost = (upgCrit + 1) * 200;
+        if (coins >= cost && upgCrit < 10) { coins -= cost; upgCrit++; }
+    } else if (type === 'auto') {
+        let cost = (upgAuto + 1) * 500;
+        if (coins >= cost) { coins -= cost; upgAuto++; }
+    }
+    updateUpgradesUI();
+    updateScoreboard();
+    saveGame();
+}
+
+function createParticles(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+        p.style.width = (Math.random() * 8 + 4) + "px";
+        p.style.height = p.style.width;
+        p.style.background = color;
+
+        arena.appendChild(p);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 60 + 20;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+
+        p.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
+        ], { duration: 600, easing: 'ease-out' });
+
+        setTimeout(() => p.remove(), 600);
+    }
+}
+
+function triggerShake() {
+    arena.classList.remove("shake");
+    void arena.offsetWidth;
+    arena.classList.add("shake");
+}
+
+function popup(text, color, x, y) {
+    const p = document.createElement("div");
     p.innerHTML = text;
-
     p.style.position = "absolute";
     p.style.left = x + "px";
     p.style.top = y + "px";
     p.style.color = color;
     p.style.fontWeight = "bold";
-    p.style.fontSize = "24px";
+    p.style.fontSize = "18px";
     p.style.pointerEvents = "none";
+    p.style.zIndex = "10000";
 
     arena.appendChild(p);
 
-    setTimeout(()=>{
-
-        p.style.transition = "1s";
-        p.style.top = (y - 60) + "px";
+    setTimeout(() => {
+        p.style.transition = "all 0.8s ease-out";
+        p.style.top = (y - 40) + "px";
         p.style.opacity = "0";
+    }, 10);
 
-    },10);
-
-    setTimeout(()=>{
-        p.remove();
-    },1000);
+    setTimeout(() => p.remove(), 800);
 }
-function newGame(){
 
-    if(!confirm(
-        "Start a new game?"
-    )){
-        return;
-    }
-
-    const savedHighScore =
-    localStorage.highScore || 0;
-
-    localStorage.clear();
-
-    localStorage.highScore =
-    savedHighScore;
-
-    location.reload();
-}
-function createBag(){
-
-    const bag =
-    document.createElement("div");
-
+// CREATE BAG - SPECIAL & TIERED BAG LOGIC
+function createBag() {
+    const bag = document.createElement("div");
     bag.className = "bag";
 
-    let hp = 100 + level * 10;
-    let reward = 500;
-let timer = 30;
+    let baseHp = 40 + level * 8; 
+    let hp = baseHp;
+    let reward = 300;
+    let timer = 30;
+    let typeName = "🥊 NORMAL";
 
-if(level >= 25 && Math.random()<0.15){
-
-    hp = 500;
-    reward = 2000;
-    timer = 120;
-
-    bag.style.background = "purple";
-}
-if(level >= 50 && Math.random()<0.10){
-
-    hp = 1000;
-    reward = 5000;
-    timer = 90;
-
-    bag.style.background = "deepskyblue";
-}
-
-    bag.hp = hp;
-    bag.maxHp = hp;
-    bag.reward = reward;
-bag.timeLeft = timer;
-    const isMobile = window.innerWidth < 768;
-
-const size = Math.max(
-    70,
-    Math.min(
-        110,
-        window.innerWidth * 0.20
-    )
-);
-    bag.style.width = size+"px";
-    bag.style.height = size*1.25 +"px";
-if(size > arena.clientWidth * 0.4){
-
-    bag.style.width =
-    arena.clientWidth * 0.4 + "px";
-
-    bag.style.height =
-    arena.clientWidth * 0.5 + "px";
-}
-const actualWidth =
-parseFloat(bag.style.width);
-
-const maxLeft =
-Math.max(
-    10,
-    arena.clientWidth - actualWidth - 10
-);
-
-bag.style.left =
-Math.random() * maxLeft + "px";
-const rightEdge =
-parseFloat(bag.style.left) + actualWidth;
-
-if(rightEdge > arena.clientWidth){
-
-    bag.style.left =
-    (arena.clientWidth - actualWidth - 10)
-    + "px";
-}
-
- const maxTop =
-Math.max(
-    20,
-    arena.clientHeight -
-    (size * 1.25) - 20
-);
-
-const minTop = 20;
-
-bag.style.top =
-(
-Math.random() *
-(maxTop - minTop)
-+ minTop
-) + "px";
-
-    const img =
-    document.createElement("img");
-
-    if(uploadedPhoto){
-        img.src = uploadedPhoto;
+    // Random Special Bag Roll (Bomb / Goblin)
+    const specialRoll = Math.random();
+    if (specialRoll < 0.12) {
+        // BOMB BAG - DO NOT HIT!
+        bag.classList.add("bomb");
+        bag.isBomb = true;
+        hp = 1;
+        timer = 8;
+        typeName = "💣 BOMB!";
+    } else if (specialRoll < 0.22) {
+        // GOBLIN BAG - HIGH SPEED HIGH COIN
+        bag.classList.add("goblin");
+        bag.isGoblin = true;
+        hp = baseHp * 0.8;
+        reward = 1500;
+        timer = 6;
+        typeName = "💰 GOBLIN";
+    } else if (level % 25 === 0) {
+        bag.classList.add("champion");
+        hp = baseHp * 8; reward = 15000; timer = 120; typeName = "👑 CHAMPION";
+    } else if (level % 10 === 0) {
+        bag.classList.add("boss");
+        hp = baseHp * 4; reward = 5000; timer = 60; typeName = "👹 BOSS";
+    } else if (level % 5 === 0) {
+        bag.classList.add("elite");
+        hp = Math.floor(baseHp * 2); reward = 2500; timer = 15; typeName = "⚡ ELITE";
     }
 
-    const hpText =
-    document.createElement("div");
+    bag.hp = hp; bag.maxHp = hp; bag.reward = reward; bag.timeLeft = timer;
 
+    const size = Math.max(75, Math.min(110, arena.clientWidth * 0.22));
+    bag.style.width = size + "px";
+    bag.style.height = (size * 1.25) + "px";
+
+    const maxLeft = Math.max(10, arena.clientWidth - size - 10);
+    bag.style.left = (Math.random() * maxLeft) + "px";
+    const maxTop = Math.max(20, arena.clientHeight - (size * 1.25) - 20);
+    bag.style.top = (Math.random() * (maxTop - 20) + 20) + "px";
+
+    // Fast movement for Goblin Bags
+    if (bag.isGoblin || (level >= 10 && Math.random() < 0.35)) {
+        bag.moveSpeed = (bag.isGoblin ? 3 : 1) * (Math.random() > 0.5 ? 1 : -1);
+    }
+
+    const img = document.createElement("img");
+    img.src = uploadedPhoto || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><circle cx='25' cy='25' r='20' fill='%23ccc'/></svg>";
+
+    const typeText = document.createElement("div");
+    typeText.className = "typeText";
+    typeText.innerHTML = typeName;
+
+    const timerText = document.createElement("div");
+    timerText.className = "timerText";
+    timerText.innerHTML = "⏳ " + timer;
+
+    const hpText = document.createElement("div");
     hpText.className = "hpText";
-    hpText.textContent =
-    hp + "/" + hp;
-const typeText =
-document.createElement("div");
+    hpText.textContent = hp + "/" + hp;
 
-typeText.className = "typeText";
-
-if(reward === 500){
-    typeText.innerHTML = "🥊 NORMAL";
-}
-
-if(reward === 2000){
-    typeText.innerHTML = "👹 BOSS";
-}
-
-if(reward === 5000){
-    typeText.innerHTML = "💎 DIAMOND";
-}
-
-const timerText =
-document.createElement("div");
-
-timerText.className = "timerText";
-timerText.innerHTML =
-"⏳ " + timer;
-    const box =
-    document.createElement("div");
-
-    box.className =
-    "hpBarContainer";
-
-    const hpBar =
-    document.createElement("div");
-
-    hpBar.className =
-    "hpBar";
-
+    const box = document.createElement("div");
+    box.className = "hpBarContainer";
+    const hpBar = document.createElement("div");
+    hpBar.className = "hpBar";
     box.appendChild(hpBar);
 
-   bag.appendChild(img);
-bag.appendChild(typeText);
-bag.appendChild(timerText);
-bag.appendChild(hpText);
-bag.appendChild(box);
+    bag.appendChild(img);
+    bag.appendChild(typeText);
+    bag.appendChild(timerText);
+    bag.appendChild(hpText);
+    bag.appendChild(box);
 
-    bag.addEventListener(
-    "click",
-    function(e){
+    if (!bag.isBomb && Math.random() < 0.4) {
+        const bullseye = document.createElement("div");
+        bullseye.className = "bullseye";
+        bullseye.style.left = (Math.random() * (size - 30)) + "px";
+        bullseye.style.top = (Math.random() * (size - 30)) + "px";
+        bag.appendChild(bullseye);
+        bag.hasBullseye = true;
+    }
 
+    bag.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
-        punch(bag);
+        let bullseyeHit = false;
+        const bull = bag.querySelector(".bullseye");
+        if (bull) {
+            const rect = bull.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                bullseyeHit = true;
+                bull.remove();
+                bag.hasBullseye = false;
+            }
+        }
+        punch(bag, false, bullseyeHit, e.clientX, e.clientY);
     });
-bag.timerInterval =
-setInterval(()=>{
 
-if(
-    !freezeActive &&
-    !gamePaused
-){
-    bag.timeLeft--;
+    bag.timerInterval = setInterval(() => {
+        if (!freezeActive && !gamePaused) {
+            bag.timeLeft--;
+
+            if (bag.moveSpeed) {
+                let curLeft = parseFloat(bag.style.left);
+                if (curLeft + bag.moveSpeed > maxLeft || curLeft + bag.moveSpeed < 10) {
+                    bag.moveSpeed *= -1;
+                }
+                bag.style.left = (curLeft + bag.moveSpeed) + "px";
+            }
+        }
+
+        timerText.innerHTML = "⏳ " + bag.timeLeft;
+
+        if (bag.timeLeft <= 0) {
+            clearInterval(bag.timerInterval);
+            const rect = bag.getBoundingClientRect();
+            const arenaRect = arena.getBoundingClientRect();
+
+            // Bomb bags disarm safely when timer runs out!
+            if (!bag.isBomb) {
+                popup("💔 HEART LOST", "red", rect.left - arenaRect.left, rect.top - arenaRect.top);
+                hearts = Math.max(0, hearts - 1);
+                flashDamage();
+                updateHearts();
+            } else {
+                popup("💨 BOMB EXPIRED", "gray", rect.left - arenaRect.left, rect.top - arenaRect.top);
+            }
+
+            bag.remove();
+
+            if (hearts <= 0) gameOver();
+            else { createBag(); saveGame(); }
+        }
+    }, 1000);
+
+    bagsContainer.appendChild(bag);
+    updateScoreboard();
 }
 
-    timerText.innerHTML =
-    "⏳ " + bag.timeLeft;
+function handleLootDrop(x, y, isGuaranteed = false) {
+    const chance = Math.random();
+    if (!isGuaranteed && chance > 0.35) return;
 
-    if(bag.timeLeft < 15){
-        timerText.style.color =
-        "orange";
-    }
-
-    if(bag.timeLeft < 5){
-        timerText.style.color =
-        "red";
-    }
-
-    if(bag.timeLeft <= 0){
-
-        clearInterval(
-        bag.timerInterval);
-
-        const rect =
-        bag.getBoundingClientRect();
-
-        popup(
-            "💔 HEART LOST",
-            "red",
-            rect.left,
-            rect.top
-        );
-
-        hearts = Math.max(
-    0,
-    hearts - 1
-);
-
+    const roll = Math.random();
+    if (roll < 0.20) {
+        hearts = Math.min(5, hearts + 1);
+        popup("❤️ HEART REFILL", "pink", x, y);
         updateHearts();
+    } else if (roll < 0.50) {
+        coins += 200;
+        popup("🪙 +200 COINS", "gold", x, y);
+    } else if (roll < 0.75) {
+        swordHits += 30;
+        popup("⚔️ SWORD 2X DMG (30 HITS)", "lime", x, y);
+    } else {
+        freezeActive = true;
+        popup("❄️ FREEZE (10s)", "cyan", x, y);
+        setTimeout(() => { freezeActive = false; updateActivePowerupsUI(); }, 10000);
+    }
 
+    updateActivePowerupsUI(); saveGame(); updateScoreboard();
+}
+
+function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0) {
+    if (gamePaused) return;
+
+    const rect = bag.getBoundingClientRect();
+    const arenaRect = arena.getBoundingClientRect();
+    const pX = clickX ? (clickX - arenaRect.left) : (rect.left - arenaRect.left + 20);
+    const pY = clickY ? (clickY - arenaRect.top) : (rect.top - arenaRect.top);
+
+    // BOMB BAG EXPLOSION PENALTY
+    if (bag.isBomb) {
+        playSound("explosion");
+        triggerShake();
+        flashDamage();
+        popup("💥 BOMB EXPLODED! -1 HEART", "red", pX, pY);
+        hearts = Math.max(0, hearts - 1);
+        updateHearts();
+        clearInterval(bag.timerInterval);
         bag.remove();
 
-        createBag();
-
-        saveGame();
-
-        if(hearts <= 0){
-            gameOver();
-localStorage.removeItem("coins");
-        }
-    }
-
-},1000);
-    bagsContainer.appendChild(bag);
-
-    updateScoreboard();
-}
-function randomDrop(x,y){
-showLoot("🎁",x,y);
-    const chance = Math.random();
-
-    if(chance > 0.20){
+        if (hearts <= 0) gameOver();
+        else createBag();
         return;
     }
 
-    if(chance < 0.01){
-
-        score += 10000;
-
-        popup(
-            "🌟 LEGENDARY +10000",
-            "gold",
-            x,
-            y
-        );
-
-        saveGame();
-        updateScoreboard();
-
-        return;
-    }
-
-    if(chance < 0.05){
-
-        hearts = Math.min(
-            5,
-            hearts + 1
-        );
-
-        popup(
-            "❤️ HEART",
-            "pink",
-            x,
-            y
-        );
-
-        updateHearts();
-    }
-
-    else if(chance < 0.10){
-
-        coins += 100;
-
-        popup(
-            "🪙 +100 COINS",
-            "gold",
-            x,
-            y
-        );
-    }
-
-    else if(chance < 0.15){
-
-        swordHits += 30;
-
-        document.getElementById(
-        "activePowerups"
-        ).innerHTML =
-        "⚔️ Sword x" + swordHits;
-
-
-        popup(
-            "⚔️ DOUBLE DAMAGE",
-            "lime",
-            x,
-            y
-        );
-
-        setTimeout(()=>{
-
-            damageMultiplier = 1;
-
-            document.getElementById(
-            "activePowerups"
-            ).innerHTML =
-            "No Powerups Active";
-
-        },15000);
-    }
-
-    else if(chance < 0.20){
-
-        freezeActive = true;
-
-        document.getElementById(
-        "activePowerups"
-        ).innerHTML =
-        "❄️ Freeze Time Drop";
-
-        popup(
-            "❄️ FREEZE",
-            "cyan",
-            x,
-            y
-        );
-
-        setTimeout(()=>{
-
-            freezeActive = false;
-
-            document.getElementById(
-            "activePowerups"
-            ).innerHTML =
-            "No Powerups Active";
-
-        },10000);
-    }
-
-    else if(chance < 0.24){
-
-        rageActive = true;
-
-        document.getElementById(
-        "activePowerups"
-        ).innerHTML =
-        "🔥 Rage Mode Drop";
-
-        popup(
-            "🔥 RAGE MODE",
-            "orange",
-            x,
-            y
-        );
-
-        setTimeout(()=>{
-
-            rageActive = false;
-
-            document.getElementById(
-            "activePowerups"
-            ).innerHTML =
-            "No Powerups Active";
-
-        },15000);
-    }
-
-    else {
-
-        window.instantKO = true;
-
-        popup(
-            "💣 INSTANT KO",
-            "red",
-            x,
-            y
-        );
-    }
-
-    saveGame();
-    updateScoreboard();
-}
-
-function punch(bag){
-
-if(gamePaused){
-    return;
-}
-    if(navigator.vibrate){
-        navigator.vibrate(25);
-    }
+    triggerVib(isAuto ? 10 : 25);
 
     glove.classList.remove("punch");
     void glove.offsetWidth;
     glove.classList.add("punch");
 
     clearTimeout(comboTimer);
-
     combo++;
+    if (!feverActive) {
+        feverPoints = Math.min(100, feverPoints + 4);
+        document.getElementById("feverBar").style.width = feverPoints + "%";
+        if (feverPoints >= 100) triggerFeverMode();
+    }
 
-    comboTimer =
-    setTimeout(()=>{
-
+    comboTimer = setTimeout(() => {
         combo = 0;
+        document.getElementById("combo").textContent = "";
+    }, 3000);
 
-        document.getElementById("combo")
-        .textContent = "";
+    let baseDamage = (Math.floor(Math.random() * 8) + 1) + (upgPower * 5);
+    let hit = baseDamage;
 
-    },3000);
+    if (swordHits > 0) { hit *= 2; swordHits--; }
+    if (rageActive) hit *= 3;
+    if (feverActive) hit *= 2;
 
-    bag.animate([
-        {transform:"rotate(0deg)"},
-        {transform:"rotate(10deg)"},
-        {transform:"rotate(-10deg)"},
-        {transform:"rotate(0deg)"}
-    ],{
-        duration:350
-    });
+    const critChance = 0.10 + (upgCrit * 0.05);
+    const critical = Math.random() < critChance || bullseyeHit || feverActive;
 
-   let hit =
-Math.floor(Math.random()*8)+1;
-if(window.instantKO){
+    if (bullseyeHit) advanceQuestProgress('bullseye');
 
-    hit = bag.hp;
-
-    window.instantKO = false;
-}
-if(swordHits > 0){
-
-    hit *= 2;
-
-    swordHits--;
-
-    document.getElementById(
-        "activePowerups"
-    ).innerHTML =
-    "⚔️ Sword x" + swordHits;
-
-    if(swordHits <= 0){
-
-        document.getElementById(
-            "activePowerups"
-        ).innerHTML =
-        "No Powerups Active";
-    }
-}
-if(rageActive){
-
-    hit *= 3;
-}
-
-    const critical =
-    Math.random()<0.10;
-
-    if(critical){
-
-        hit *= 5;
-
-        document.getElementById("combo")
-        .innerHTML =
-        "⚡ CRITICAL!";
-    }
-    else{
-
-        document.getElementById("combo")
-        .innerHTML =
-        "🔥 Combo x"+combo;
+    if (critical) {
+        advanceQuestProgress('crit');
+        hit *= bullseyeHit ? 4 : 3;
+        playSound("crit");
+        triggerShake();
+        document.getElementById("combo").innerHTML = bullseyeHit ? "🎯 BULLSEYE 4x!" : "⚡ CRITICAL!";
+    } else {
+        playSound("punch");
+        document.getElementById("combo").innerHTML = "🔥 Combo x" + combo;
     }
 
     bag.hp -= hit;
-    score += hit*10;
+    score += hit * 10;
 
-    const rect =
-    bag.getBoundingClientRect();
-
-    popup(
-        "💥 -" + hit,
-        "yellow",
-        rect.left + 50,
-        rect.top
-    );
-const hpText =
-bag.querySelector(".hpText");
-
-const hpBar =
-bag.querySelector(".hpBar");
-   if(bag.classList.contains("superBoss")){
-
-    hpText.textContent =
-    "👹 " +
-    Math.max(0,bag.hp)
-    + "/" +
-    bag.maxHp;
-
-}else{
-
-    hpText.textContent =
-    Math.max(0,bag.hp)
-    + "/" +
-    bag.maxHp;
-}
-    const percent =
-    Math.max(0,
-    bag.hp /
-    bag.maxHp *100);
-
-    hpBar.style.width =
-    percent + "%";
-
-    if(percent < 60)
-        hpBar.style.background =
-        "orange";
-
-    if(percent < 30)
-        hpBar.style.background =
-        "red";
-
-    level =
-    Math.floor(score/2500)+1;
-
-    const desiredBags =
-    Math.min(
-      10,
-      Math.floor(level/10)+1
-    );
-
-    while(
-      document.querySelectorAll(".bag")
-      .length < desiredBags
-    ){
-      createBag();
+    // Goblin Bags award massive coins per hit
+    if (bag.isGoblin) {
+        coins += 15;
+        popup("🪙 +15", "gold", pX, pY);
     }
 
-    if(bag.hp <= 0){
+    createParticles(pX, pY, critical ? "#ffaa00" : "#ff3300", critical ? 12 : 6);
+    popup("💥 -" + hit, critical ? "gold" : "yellow", pX, pY);
 
+    const hpText = bag.querySelector(".hpText");
+    const hpBar = bag.querySelector(".hpBar");
+    hpText.textContent = Math.max(0, bag.hp) + "/" + bag.maxHp;
+
+    const percent = Math.max(0, (bag.hp / bag.maxHp) * 100);
+    hpBar.style.width = percent + "%";
+
+    level = Math.floor(score / 2500) + 1;
+
+    if (bag.hp <= 0) {
+        playSound("ko");
+        totalKills++;
         score += bag.reward;
+        coins += Math.floor(bag.reward / 10);
 
-coins += Math.floor(
-    bag.reward / 10
-);
+        advanceQuestProgress('ko');
 
-        popup(
-          "💀 KO +" + bag.reward,
-          "gold",
-          rect.left,
-          rect.top
-        );
-clearInterval(
-bag.timerInterval
-);
+        popup("💀 KO +" + bag.reward, "gold", rect.left - arenaRect.left, rect.top - arenaRect.top);
+        clearInterval(bag.timerInterval);
 
-showLoot(
-    "🎁",
-    bag.offsetLeft,
-    bag.offsetTop
-);
+        createParticles(rect.left - arenaRect.left + 40, rect.top - arenaRect.top + 40, "#ffffff", 20);
+        
+        const isGuaranteedDrop = (totalKills % 3 === 0);
+        handleLootDrop(bag.offsetLeft, bag.offsetTop, isGuaranteedDrop);
+        
+        bag.remove();
 
-bag.remove();
-
-createBag();
-updateScoreboard();
-updateHearts();
+        const desiredBags = Math.min(5, Math.floor(level / 10) + 1);
+        while (document.querySelectorAll(".bag").length < desiredBags) {
+            createBag();
+        }
     }
 
-    saveGame();
-    updateScoreboard();
+    updateActivePowerupsUI(); saveGame(); updateScoreboard();
 }
 
-arena.addEventListener(
-"click",
-function(e){
-if(gamePaused){
-    return;
-}
-    if(e.target.closest(".bag"))
-        return;
+function triggerFeverMode() {
+    feverActive = true;
+    arena.classList.add("feverFlash");
+    document.getElementById("feverText").textContent = "🔥 FEVER ACTIVE! 🔥";
+    document.getElementById("feverBar").style.background = "gold";
 
-    hearts = Math.max(
-    0,
-    hearts - 1
-);
-
-    combo = 0;
-
-    document.getElementById("combo")
-    .textContent = "";
-
-    updateHearts();
-
-    saveGame();
-
-    if(hearts <= 0){
-
-        gameOver();
-    }
-});
-function buyRageMode(){
-
-    if(coins < 500){
-        return;
-    }
-
-    coins -= 500;
-document.getElementById("activePowerups")
-.innerHTML =
-"🔥 Rage Mode Active";
-    rageActive = true;
-
-    popup(
-        "🔥 RAGE MODE",
-        "orange",
-        200,
-        200
-    );
-
-    updateScoreboard();
-    saveGame();
-
-    setTimeout(()=>{
-
-    rageActive = false;
-
-    document.getElementById(
-      "activePowerups"
-    ).innerHTML = "";
-
-},15000);
-}
-function spawnBossBag(){
-if(document.querySelector(".superBoss")){
-
-    popup(
-        "👹 Boss Already Exists",
-        "red",
-        200,
-        200
-    );
-
-    return;
+    const feverInt = setInterval(() => {
+        feverPoints -= 2;
+        document.getElementById("feverBar").style.width = feverPoints + "%";
+        if (feverPoints <= 0) {
+            clearInterval(feverInt);
+            feverActive = false;
+            arena.classList.remove("feverFlash");
+            document.getElementById("feverText").textContent = "🔥 FEVER METER";
+            document.getElementById("feverBar").style.background = "linear-gradient(90deg, #ff8c00, #ff0055)";
+        }
+    }, 200);
 }
 
-    if(coins < 1000){
+function buyRageMode() {
+    if (coins < 500) return;
+    coins -= 500; rageActive = true;
+    updateActivePowerupsUI();
+    popup("🔥 RAGE MODE (15s)", "orange", arena.clientWidth / 2 - 80, 50);
+    updateScoreboard(); saveGame();
+    setTimeout(() => { rageActive = false; updateActivePowerupsUI(); }, 15000);
+}
+
+function buyDoubleDamage() {
+    if (coins < 200) return;
+    coins -= 200; swordHits += 30;
+    updateActivePowerupsUI();
+    popup("⚔️ SWORD 2X DMG (30 HITS)", "lime", arena.clientWidth / 2 - 100, 50);
+    updateScoreboard(); saveGame();
+}
+
+function buyFreezeTime() {
+    if (coins < 300) return;
+    coins -= 300; freezeActive = true;
+    updateActivePowerupsUI();
+    popup("❄️ TIME FROZEN (10s)", "cyan", arena.clientWidth / 2 - 80, 50);
+    updateScoreboard(); saveGame();
+    setTimeout(() => { freezeActive = false; updateActivePowerupsUI(); }, 10000);
+}
+
+function spawnBossBag() {
+    if (document.querySelector(".superBoss")) {
+        popup("👹 Boss Already Exists", "red", arena.clientWidth / 2 - 80, 50);
         return;
     }
-
+    if (coins < 1000) return;
     coins -= 1000;
 
-    const bag =
-    document.createElement("div");
+    const bag = document.createElement("div");
+    bag.className = "bag superBoss boss";
+    bag.hp = 1200; bag.maxHp = 1200; bag.reward = 10000; bag.timeLeft = 180;
 
-bag.className = "bag";
-bag.classList.add("superBoss");
-    bag.hp = 3000;
-    bag.maxHp = 3000;
-    bag.reward = 10000;
-    bag.timeLeft = 180;
+    const bossSize = Math.min(arena.clientWidth * 0.28, 150);
+    bag.style.width = bossSize + "px";
+    bag.style.height = (bossSize * 1.25) + "px";
+    bag.style.left = (arena.clientWidth / 2 - bossSize / 2) + "px";
+    bag.style.top = "20px";
 
-    bag.style.background = "darkred";
+    const img = document.createElement("img");
+    img.src = uploadedPhoto || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><circle cx='25' cy='25' r='20' fill='%23ccc'/></svg>";
 
-    const bossSize = Math.min(
-    window.innerWidth * 0.30,
-    180
-);
-
-bag.style.width =
-bossSize + "px";
-
-bag.style.height =
-(bossSize * 1.25) + "px";
-
-   const existingBags =
-document.querySelectorAll(".bag").length;
-
-const maxLeft =
-arena.clientWidth - bossSize - 20;
-
-bag.style.left =
-(Math.random() * maxLeft) + "px";
-const bossRightEdge =
-parseFloat(bag.style.left) + bossSize;
-
-if(bossRightEdge > arena.clientWidth){
-
-    bag.style.left =
-    (arena.clientWidth - bossSize - 10)
-    + "px";
-}
-
-  bag.style.top =
-Math.random() * 120 + "px";
-
-    const img =
-    document.createElement("img");
-
-    if(uploadedPhoto){
-        img.src = uploadedPhoto;
-    }
-
-    const typeText =
-    document.createElement("div");
-
+    const typeText = document.createElement("div");
     typeText.className = "typeText";
     typeText.innerHTML = "👹 SUPER BOSS";
 
-    const timerText =
-    document.createElement("div");
-
+    const timerText = document.createElement("div");
     timerText.className = "timerText";
     timerText.innerHTML = "⏳ 180";
 
-    const hpText =
-    document.createElement("div");
-
+    const hpText = document.createElement("div");
     hpText.className = "hpText";
-    hpText.innerHTML = "3000/3000";
+    hpText.innerHTML = "1200/1200";
 
-    const hpBox =
-    document.createElement("div");
-
+    const hpBox = document.createElement("div");
     hpBox.className = "hpBarContainer";
-
-    const hpBar =
-    document.createElement("div");
-
+    const hpBar = document.createElement("div");
     hpBar.className = "hpBar";
-
     hpBox.appendChild(hpBar);
 
-    bag.appendChild(img);
-    bag.appendChild(typeText);
-    bag.appendChild(timerText);
-    bag.appendChild(hpText);
-    bag.appendChild(hpBox);
+    bag.appendChild(img); bag.appendChild(typeText); bag.appendChild(timerText); bag.appendChild(hpText); bag.appendChild(hpBox);
 
-    bag.addEventListener("click",(e)=>{
+    bag.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
-        punch(bag);
+        punch(bag, false, false, e.clientX, e.clientY);
     });
 
     bagsContainer.appendChild(bag);
 
-    updateScoreboard();
-    saveGame();
-bag.timerInterval = setInterval(()=>{
-
-    if(!freezeActive){
-
-        bag.timeLeft--;
-    }
-
-    timerText.innerHTML =
-    "⏳ " + bag.timeLeft;
-
-    if(bag.timeLeft <= 0){
-
-        clearInterval(bag.timerInterval);
-
-       hearts = Math.max(
-    0,
-    hearts - 1
-);
-
-        updateHearts();
-
-        bag.remove();
-
-        if(hearts <= 0){
-            gameOver();
+    bag.timerInterval = setInterval(() => {
+        if (!freezeActive && !gamePaused) bag.timeLeft--;
+        timerText.innerHTML = "⏳ " + bag.timeLeft;
+        if (bag.timeLeft <= 0) {
+            clearInterval(bag.timerInterval);
+            hearts = Math.max(0, hearts - 1);
+            flashDamage();
+            updateHearts();
+            bag.remove();
+            if (hearts <= 0) gameOver();
         }
-    }
+    }, 1000);
 
-},1000);
+    updateScoreboard(); saveGame();
 }
-function showLoot(item,x,y){
 
-    const loot =
-    document.createElement("div");
-
-    loot.innerHTML = item;
-
-    loot.style.position =
-    "absolute";
-
-    loot.style.left =
-    x + "px";
-
-    loot.style.top =
-    y + "px";
-
-    loot.style.fontSize =
-    "40px";
-loot.style.zIndex = "9999";
-loot.style.pointerEvents = "none";
-    arena.appendChild(loot);
-
-    setTimeout(()=>{
-
-        loot.style.transition =
-        "1s";
-
-        loot.style.top =
-(y + 120) + "px";
-
-        loot.style.opacity =
-        "0";
-
-    },10);
-
-    setTimeout(()=>{
-
-        loot.remove();
-
-    },1000);
-
-}
-function gameOver(){
-
-    document.getElementById("combo")
-    .innerHTML =
-    "☠️ GAME OVER";
-
-    if(score > highScore){
-
-        highScore = score;
-        localStorage.highScore =
-        highScore;
-    }
+function gameOver() {
+    document.getElementById("combo").innerHTML = "☠️ GAME OVER";
+    if (score > highScore) localStorage.highScore = score;
 
     localStorage.removeItem("score");
     localStorage.removeItem("level");
     localStorage.removeItem("hearts");
-localStorage.removeItem("coins");
-    setTimeout(()=>{
+    localStorage.removeItem("coins");
+    localStorage.removeItem("swordHits");
+    localStorage.removeItem("totalKills");
 
-        location.reload();
-
-    },3000);
+    setTimeout(() => { location.reload(); }, 2500);
 }
-function buyDoubleDamage(){
 
-    if(coins < 200){
-        return;
-    }
+document.getElementById("upload").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    coins -= 200;
-
-    swordHits = 30;
-
-    document.getElementById(
-        "activePowerups"
-    ).innerHTML =
-    "⚔️ Sword x30";
-
-    popup(
-        "⚔️ SWORD x30",
-        "lime",
-        200,
-        200
-    );
-
-    updateScoreboard();
-    saveGame();
-}
-function buyFreezeTime(){
-
-
-    if(coins < 300){
-        return;
-    }
-
-    coins -= 300;
-document.getElementById("activePowerups")
-.innerHTML =
-"❄️ Freeze Time Active";
-    freezeActive = true;
-
-    popup(
-        "❄️ TIME FROZEN",
-        "cyan",
-        200,
-        200
-    );
-
-    updateScoreboard();
-    saveGame();
-document.getElementById(
-    "swordCount"
-).textContent = swordHits;
-setTimeout(()=>{
-
-    freezeActive = false;
-
-    document.getElementById(
-        "activePowerups"
-    ).innerHTML = "";
-
-},10000);
-}
-document.getElementById("upload")
-.addEventListener(
-"change",
-function(e){
-
-    const file =
-    e.target.files[0];
-
-    if(!file) return;
-
-    const reader =
-    new FileReader();
-
-    reader.onload =
-    function(){
-
-        uploadedPhoto =
-        reader.result;
-
-        localStorage.photo =
-        uploadedPhoto;
-
-        document
-        .querySelectorAll(".bag img")
-        .forEach(img=>{
-
-            img.src =
-            uploadedPhoto;
-        });
-
+    const reader = new FileReader();
+    reader.onload = function() {
+        uploadedPhoto = reader.result;
+        localStorage.photo = uploadedPhoto;
+        document.querySelectorAll(".bag img").forEach(img => { img.src = uploadedPhoto; });
         saveGame();
     };
-
     reader.readAsDataURL(file);
 });
 
+// Init
 createBag();
 updateScoreboard();
 updateHearts();
-
 </script>
-<div id="restartModal" class="modal">
 
-    <div class="modalBox">
-
-        <h2>⚠️ Start New Game?</h2>
-
-        <p>
-            Your score, coins, level and hearts
-            will be reset.
-        </p>
-
-        <button onclick="confirmNewGame()">
-            ✅ Yes
-        </button>
-
-        <button onclick="closeRestartModal()">
-            ❌ No
-        </button>
-
-    </div>
-
-</div>
 </body>
 </html>
