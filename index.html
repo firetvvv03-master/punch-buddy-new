@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Punch Buddy V6.0 - Ultimate Arcade Edition</title>
+<title>Punch Buddy V8.0 - Enhanced Bags Edition</title>
 
 <style>
 * {
@@ -76,6 +76,7 @@ h1 {
 #hearts {
     font-size: 18px;
     margin: 2px 0;
+    letter-spacing: 2px;
 }
 
 #feverBarContainer {
@@ -132,6 +133,30 @@ h1 {
     background: #2e2e4a;
 }
 
+#gloveSelector {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 4px 0;
+}
+
+#gloveSelector button {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #151520;
+    color: #aaa;
+    cursor: pointer;
+}
+
+#gloveSelector button.activeGlove {
+    border-color: #00ffcc;
+    background: #223344;
+    color: #fff;
+    box-shadow: 0 0 8px #00ffcc;
+}
+
 #ultBtn {
     background: linear-gradient(135deg, #ff0055, #ffcc00) !important;
     color: black !important;
@@ -147,15 +172,18 @@ h1 {
     min-height: 15px;
 }
 
-/* Arena Background Themes */
 #arena {
     position: relative;
     width: 100vw;
-    height: calc(100vh - 320px);
-    min-height: 300px;
+    height: calc(100vh - 350px);
+    min-height: 280px;
     overflow: hidden;
     border-top: 2px solid #2a2a3d;
-    transition: background 0.5s, box-shadow 0.2s, filter 0.2s;
+    transition: background 0.5s, box-shadow 0.2s, filter 0.2s, transform 0.1s ease-out;
+}
+
+#arena.zoomPulse {
+    transform: scale(1.02);
 }
 
 #arena.theme-cyberpunk {
@@ -221,7 +249,22 @@ h1 {
     transition: opacity 0.3s, transform 0.3s;
 }
 
-/* Base Bag Styles */
+#activePet {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 28px;
+    z-index: 900;
+    pointer-events: none;
+    animation: petFloat 2s ease-in-out infinite alternate;
+}
+
+@keyframes petFloat {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-12px); }
+}
+
+/* Base Bag Styles & Variants */
 .bag {
     position: absolute;
     background: #a31c1c;
@@ -235,6 +278,36 @@ h1 {
     justify-style: space-evenly;
     padding: 4px;
     transition: transform 0.15s ease-out, opacity 0.4s, filter 0.2s;
+    z-index: 10;
+}
+
+.bag * {
+    pointer-events: none;
+}
+
+.bag .bullseye {
+    pointer-events: auto;
+}
+
+.bag.inferno {
+    background: linear-gradient(135deg, #ff2200, #990000);
+    border: 2px solid #ffaa00;
+    box-shadow: 0 0 18px #ff4500;
+}
+
+.bag.frost {
+    background: linear-gradient(135deg, #00d2ff, #004080);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 18px #00d2ff;
+}
+
+.bag.splitter {
+    background: linear-gradient(135deg, #00bfff, #00008b);
+    border: 2px dashed #00ffff;
+}
+
+.bag.minibag {
+    border-radius: 12px;
 }
 
 .bag.ghost {
@@ -245,7 +318,7 @@ h1 {
 
 .bag.ghost.invisible {
     opacity: 0.15;
-    pointer-events: none;
+    pointer-events: none !important;
 }
 
 .bag.healer {
@@ -291,9 +364,9 @@ h1 {
 }
 
 .bag.bomb {
-    background: radial-gradient(circle, #333 0%, #000 100%);
-    border: 2px dashed #ff0000;
-    box-shadow: 0 0 15px #ff0000;
+    background: radial-gradient(circle, #ff6600 0%, #330000 100%);
+    border: 2px dashed #ffaa00;
+    box-shadow: 0 0 20px #ff6600;
 }
 
 .bag.goblin {
@@ -326,14 +399,12 @@ h1 {
     object-fit: cover;
     border-radius: 50%;
     border: 2px solid #fff;
-    pointer-events: none;
     transition: filter 0.2s;
 }
 
 .bag .faceOverlay {
     position: absolute;
     inset: 0;
-    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -346,7 +417,6 @@ h1 {
     left: 50%;
     transform: translateX(-50%);
     font-size: 18px;
-    pointer-events: none;
     z-index: 10;
 }
 
@@ -354,7 +424,6 @@ h1 {
     font-size: clamp(9px, 2vw, 11px);
     font-weight: bold;
     line-height: 1.1;
-    pointer-events: none;
 }
 
 .timerText { color: lime; }
@@ -368,7 +437,6 @@ h1 {
     border-radius: 10px;
     overflow: hidden;
     background: #222;
-    pointer-events: none;
 }
 
 .hpBar {
@@ -387,14 +455,12 @@ h1 {
     background: rgba(255, 0, 85, 0.3);
     animation: spin 2s linear infinite;
     z-index: 100;
-    pointer-events: none;
 }
 
 @keyframes spin {
     100% { transform: rotate(360deg); }
 }
 
-/* Floating Items */
 .dropItem {
     position: absolute;
     width: 32px;
@@ -426,16 +492,7 @@ h1 {
     font-size: 55px;
     pointer-events: none;
     z-index: 1000;
-}
-
-.punch {
-    animation: punchAnim 0.2s ease;
-}
-
-@keyframes punchAnim {
-    0% { transform: translateX(0) scale(1); }
-    50% { transform: translateX(-100px) scale(1.3); }
-    100% { transform: translateX(0) scale(1); }
+    transition: transform 0.12s ease-out;
 }
 
 .particle {
@@ -478,7 +535,7 @@ h1 {
     font-size: 11px;
 }
 
-.upgradeRow {
+.upgradeRow, .statRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -509,13 +566,14 @@ h1 {
 }
 
 .confirmBtn { background: #cc0000; color: white; }
+.continueBtn { background: #00cc66; color: white; }
 .cancelBtn { background: #555; color: white; }
 </style>
 </head>
 
 <body>
 
-<h1>🥊 Punch Buddy V6.0</h1>
+<h1>🥊 Punch Buddy V8.0</h1>
 
 <div id="topControls">
     <label for="upload">📷 Face</label>
@@ -524,6 +582,7 @@ h1 {
     <button onclick="toggleMusic()" id="musicBtn">🎵 Music: OFF</button>
     <button onclick="toggleVib()" id="vibBtn">📳 Vib: ON</button>
     <button onclick="openUpgradesModal()">🏋️ Hub & Wardrobe</button>
+    <button onclick="openStatsModal()">📊 Stats</button>
     <button onclick="openRestartModal()">🔄 Reset</button>
     <button onclick="togglePause()" id="pauseBtn">⏸️ Pause</button>
 </div>
@@ -557,16 +616,25 @@ h1 {
 <div id="shop">
     <div id="activePowerups">No Powerups Active</div>
 
+    <!-- Active Glove Selector (Always Visible) -->
+    <div id="gloveSelector">
+        <button id="gloveStandardBtn" class="activeGlove" onclick="selectActiveGlove('standard')">🥊 Standard</button>
+        <button id="gloveFireBtn" onclick="selectActiveGlove('fire')">🔥 Fire Glove</button>
+        <button id="gloveIceBtn" onclick="selectActiveGlove('ice')">🧊 Ice Glove</button>
+    </div>
+
+    <button onclick="buyExtraHearts()">💖 +5 Max Hearts (400 🪙)</button>
     <button onclick="buyDoubleDamage()">⚔️ Sword 2x (30 Hits) (200 🪙)</button>
     <button onclick="buyFreezeTime()">❄️ Freeze (300 🪙)</button>
     <button onclick="buyRageMode()">🔥 Rage Mode (500 🪙)</button>
     <button onclick="spawnPinata()">🪅 Piñata Rush (600 🪙)</button>
-    <button id="ultBtn" onclick="triggerUltimate()">💥 ULTIMATE CLEAR (800 🪙)</button>
+    <button id="ultBtn" onclick="triggerUltimate()">💥 ULTIMATE CLEAR (3000 🪙)</button>
 </div>
 
 <div id="hearts"></div>
 
 <div id="arena" class="theme-cyberpunk">
+    <div id="activePet"></div>
     <div id="combo"></div>
     <div id="announcerText"></div>
     <div id="bags"></div>
@@ -583,9 +651,55 @@ h1 {
     </div>
 </div>
 
+<div id="gameOverModal" class="modal">
+    <div class="modalBox">
+        <h2>☠️ GAME OVER</h2>
+        <p>You ran out of lives!</p>
+        <p>Final Score: <strong id="finalScore">0</strong></p>
+        <button class="continueBtn" onclick="continueGame()">❤️ Continue (+3 Hearts for 1000 🪙)</button>
+        <button class="confirmBtn" onclick="confirmNewGame()">🔄 New Game (Reset All Except High Score)</button>
+    </div>
+</div>
+
+<div id="statsModal" class="modal">
+    <div class="modalBox">
+        <h2>📊 Lifetime Statistics</h2>
+        <div class="statRow"><span>Total Punches:</span><strong id="stPunches">0</strong></div>
+        <div class="statRow"><span>Total KOs:</span><strong id="stKills">0</strong></div>
+        <div class="statRow"><span>Bosses Defeated:</span><strong id="stBosses">0</strong></div>
+        <div class="statRow"><span>Crit Hits Landed:</span><strong id="stCrits">0</strong></div>
+        <div class="statRow"><span>Highest Combo:</span><strong id="stMaxCombo">0</strong></div>
+        <br>
+        <button class="cancelBtn" onclick="closeModal('statsModal')">Close</button>
+    </div>
+</div>
+
 <div id="upgradesModal" class="modal">
     <div class="modalBox">
         <h2>🏋️ Arcade Hub</h2>
+
+        <h3>🔥 Special Elemental Gloves</h3>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Fire Glove</strong><br>
+                <small>Req. for Inferno Bags</small>
+            </div>
+            <button id="buyFireBtn" onclick="buyGlove('fire')">750 🪙</button>
+        </div>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Ice Glove</strong><br>
+                <small>Req. for Frost Bags</small>
+            </div>
+            <button id="buyIceBtn" onclick="buyGlove('ice')">750 🪙</button>
+        </div>
+
+        <h3>🐉 Sidekick Pets</h3>
+        <div style="display:flex; justify-style:space-around; flex-wrap:wrap; margin-bottom:10px;">
+            <button onclick="setPet('')">❌ None</button>
+            <button onclick="setPet('🐉', 1000)">🐉 Dragon (1000 🪙)</button>
+            <button onclick="setPet('🤖', 1500)">🤖 Drone (1500 🪙)</button>
+        </div>
 
         <h3>🕶️ Wardrobe Cosmetics</h3>
         <div style="display:flex; justify-style:space-around; flex-wrap:wrap; margin-bottom:10px;">
@@ -636,7 +750,7 @@ h1 {
             <button onclick="setTheme('volcano')">🌋 Lava</button>
         </div>
 
-        <h3>🥊 Glove Skins</h3>
+        <h3>🥊 Glove Skins (Standard)</h3>
         <div style="display:flex; justify-style:space-around; margin-top:5px;">
             <button onclick="setGloveSkin('🥊')">🥊 Red</button>
             <button onclick="setGloveSkin('⚡')">⚡ Bolt</button>
@@ -653,7 +767,7 @@ h1 {
 </div>
 
 <script>
-// --- AUDIO & MUSIC SYNTHESIS ---
+// --- AUDIO SYNTHESIS ---
 let audioCtx = null;
 let soundEnabled = true;
 let musicEnabled = false;
@@ -662,6 +776,9 @@ let musicInterval = null;
 
 function initAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
 function playSound(type, pitchMultiplier = 1.0) {
@@ -677,11 +794,11 @@ function playSound(type, pitchMultiplier = 1.0) {
 
     if (type === "punch") {
         osc.type = "sine";
-        osc.frequency.setValueAtTime(130 * pitchMultiplier, now);
-        osc.frequency.exponentialRampToValueAtTime(30 * pitchMultiplier, now + 0.08);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-        osc.start(now); osc.stop(now + 0.08);
+        osc.frequency.setValueAtTime(150 * pitchMultiplier, now);
+        osc.frequency.exponentialRampToValueAtTime(20 * pitchMultiplier, now + 0.1);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
     } else if (type === "crit") {
         osc.type = "triangle";
         osc.frequency.setValueAtTime(320 * pitchMultiplier, now);
@@ -767,19 +884,26 @@ function triggerVib(ms) {
     if (vibEnabled && navigator.vibrate) navigator.vibrate(ms);
 }
 
-// --- GAME STATE ---
+// --- GAME STATE & METRICS ---
 let score = Number(localStorage.score) || 0;
 let highScore = Number(localStorage.highScore) || 0;
 let level = Number(localStorage.level) || 1;
-let hearts = Number(localStorage.hearts) || 5;
+let baseMaxHearts = 9;
+let maxHearts = Number(localStorage.maxHearts) || 9;
+let hearts = Number(localStorage.hearts) !== undefined ? Number(localStorage.hearts) : maxHearts;
 let coins = Number(localStorage.coins) || 0;
 let swordHits = Number(localStorage.swordHits) || 0;
 let totalKills = Number(localStorage.totalKills) || 0;
 let totalBossesDefeated = Number(localStorage.totalBossesDefeated) || 0;
+let totalPunches = Number(localStorage.totalPunches) || 0;
+let totalCrits = Number(localStorage.totalCrits) || 0;
+let maxComboStreak = Number(localStorage.maxComboStreak) || 0;
+
 let gamePaused = false;
 let uploadedPhoto = localStorage.photo || "";
 let currentTheme = localStorage.currentTheme || "cyberpunk";
 let activeHat = localStorage.activeHat || "";
+let activePet = localStorage.activePet || "";
 
 // Upgrades & Custom Skins
 let upgPower = Number(localStorage.upgPower) || 0;
@@ -788,9 +912,14 @@ let upgAuto = Number(localStorage.upgAuto) || 0;
 let upgMagnet = Number(localStorage.upgMagnet) || 0;
 let gloveSkin = localStorage.gloveSkin || "🥊";
 
+// Special Glove Inventory State
+let ownedGloves = { standard: true, fire: false, ice: false };
+if (localStorage.ownedGloves) ownedGloves = JSON.parse(localStorage.ownedGloves);
+let activeGloveType = localStorage.activeGloveType || "standard";
+
 // Artifact System
 let artifacts = {
-    vampire: { title: "🩸 Vampire Glove", desc: "Heal 1 HP back every 50 punches", equipped: false },
+    vampire: { title: "🩸 Vampire Glove", desc: "Heal 0.5 HP back every 50 punches", equipped: false },
     luckyCoin: { title: "🪙 Lucky Coin", desc: "+15% Extra Coins from all bag KOs", equipped: false },
     cursedBandage: { title: "🩹 Cursed Bandage", desc: "+50% DMG, but timers run 20% faster", equipped: false }
 };
@@ -830,49 +959,42 @@ const bagsContainer = document.getElementById("bags");
 const glove = document.getElementById("glove");
 
 setTheme(currentTheme);
-glove.textContent = gloveSkin;
+setPetUI();
+selectActiveGlove(activeGloveType);
 updateHearts();
 updateScoreboard();
 updateUpgradesUI();
 updateActivePowerupsUI();
 updateQuestUI();
 
-// Healer Bag Tick Loop
+// Auto Glove & Pet Interval
 setInterval(() => {
-    if (gamePaused) return;
-    const healers = document.querySelectorAll(".bag.healer");
-    healers.forEach(h => {
-        const bags = document.querySelectorAll(".bag:not(.healer)");
-        bags.forEach(b => {
-            if (b.hp < b.maxHp) {
-                b.hp = Math.min(b.maxHp, b.hp + 5);
-                const hpText = b.querySelector(".hpText");
-                const hpBar = b.querySelector(".hpBar");
-                if (hpText) hpText.textContent = Math.max(0, b.hp) + "/" + b.maxHp;
-                if (hpBar) hpBar.style.width = ((b.hp / b.maxHp) * 100) + "%";
+    if (!gamePaused) {
+        if (upgAuto > 0) {
+            const bags = document.querySelectorAll(".bag:not(.bomb)");
+            if (bags.length > 0) {
+                const randomBag = bags[Math.floor(Math.random() * bags.length)];
+                punch(randomBag, true);
             }
-        });
-    });
-}, 2000);
-
-// Auto Glove Interval
-setInterval(() => {
-    if (upgAuto > 0 && !gamePaused) {
-        const bags = document.querySelectorAll(".bag:not(.bomb)");
-        if (bags.length > 0) {
-            const randomBag = bags[Math.floor(Math.random() * bags.length)];
-            punch(randomBag, true);
+        }
+        if (activePet !== "") {
+            const bags = document.querySelectorAll(".bag:not(.bomb)");
+            if (bags.length > 0) {
+                const randomBag = bags[Math.floor(Math.random() * bags.length)];
+                const rect = randomBag.getBoundingClientRect();
+                const arenaRect = arena.getBoundingClientRect();
+                popup(activePet + " FIRE!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                punch(randomBag, true);
+            }
         }
     }
-}, 1000);
+}, 1200);
 
 // Loot Magnet Auto-Collector
 setInterval(() => {
     if (upgMagnet > 0 && !gamePaused) {
         const drops = document.querySelectorAll(".dropItem");
-        drops.forEach(item => {
-            if (item.collect) item.collect();
-        });
+        drops.forEach(item => { if (item.collect) item.collect(); });
     }
 }, 2000);
 
@@ -880,10 +1002,14 @@ function saveGame() {
     localStorage.score = score;
     localStorage.level = level;
     localStorage.hearts = hearts;
+    localStorage.maxHearts = maxHearts;
     localStorage.coins = coins;
     localStorage.swordHits = swordHits;
     localStorage.totalKills = totalKills;
-    localStorage.totalBossesDefeated = totalBossesDefeated;
+    localStorage.totalBossesDefated = totalBossesDefeated;
+    localStorage.totalPunches = totalPunches;
+    localStorage.totalCrits = totalCrits;
+    localStorage.maxComboStreak = maxComboStreak;
     localStorage.photo = uploadedPhoto;
     localStorage.upgPower = upgPower;
     localStorage.upgCrit = upgCrit;
@@ -892,12 +1018,51 @@ function saveGame() {
     localStorage.gloveSkin = gloveSkin;
     localStorage.currentTheme = currentTheme;
     localStorage.activeHat = activeHat;
+    localStorage.activePet = activePet;
+    localStorage.ownedGloves = JSON.stringify(ownedGloves);
+    localStorage.activeGloveType = activeGloveType;
     localStorage.achievements = JSON.stringify(achievements);
     localStorage.artifacts = JSON.stringify(artifacts);
 
     if (score > highScore) {
         highScore = score;
         localStorage.highScore = highScore;
+    }
+}
+
+function selectActiveGlove(type) {
+    if (!ownedGloves[type]) {
+        popup("🔒 Unlock in Arcade Hub!", "red", arena.clientWidth / 2 - 90, 50);
+        return;
+    }
+    activeGloveType = type;
+    document.querySelectorAll("#gloveSelector button").forEach(b => b.classList.remove("activeGlove"));
+
+    if (type === 'standard') {
+        document.getElementById("gloveStandardBtn").classList.add("activeGlove");
+        glove.textContent = gloveSkin;
+    } else if (type === 'fire') {
+        document.getElementById("gloveFireBtn").classList.add("activeGlove");
+        glove.textContent = "🔥";
+    } else if (type === 'ice') {
+        document.getElementById("gloveIceBtn").classList.add("activeGlove");
+        glove.textContent = "🧊";
+    }
+    saveGame();
+}
+
+function buyGlove(type) {
+    if (ownedGloves[type]) return;
+    if (coins >= 750) {
+        coins -= 750;
+        ownedGloves[type] = true;
+        selectActiveGlove(type);
+        updateUpgradesUI();
+        updateScoreboard();
+        saveGame();
+        popup("🔓 Glove Unlocked!", "#00ff88", arena.clientWidth / 2 - 80, 50);
+    } else {
+        popup("❌ Need 750 Coins!", "red", arena.clientWidth / 2 - 60, 50);
     }
 }
 
@@ -911,6 +1076,24 @@ function setHat(hat) {
     activeHat = hat;
     document.querySelectorAll(".hatOverlay").forEach(el => el.textContent = hat);
     saveGame();
+}
+
+function setPet(pet, cost = 0) {
+    if (cost > 0 && activePet !== pet) {
+        if (coins < cost) {
+            popup("❌ Need " + cost + " Coins!", "red", arena.clientWidth / 2 - 70, 50);
+            return;
+        }
+        coins -= cost;
+    }
+    activePet = pet;
+    setPetUI();
+    saveGame();
+    updateScoreboard();
+}
+
+function setPetUI() {
+    document.getElementById("activePet").textContent = activePet;
 }
 
 function triggerAnnouncer(text) {
@@ -939,17 +1122,18 @@ function updateActivePowerupsUI() {
     if (swordHits > 0) activeText.push("⚔️ Sword (" + swordHits + " hits)");
     if (rageActive) activeText.push("🔥 Rage 3x Dmg");
     if (freezeActive) activeText.push("❄️ Freeze Active");
+    if (maxHearts > 9) activeText.push("💖 Over-Hearts Active");
 
     document.getElementById("activePowerups").innerHTML = activeText.length > 0 ? activeText.join(" | ") : "No Powerups Active";
 }
 
 function updateScoreboard() {
-    document.getElementById("score").textContent = score;
-    document.getElementById("highScore").textContent = highScore;
-    document.getElementById("level").textContent = level;
-    document.getElementById("coins").textContent = coins;
+    document.getElementById("score").textContent = Math.floor(score);
+    document.getElementById("highScore").textContent = Math.floor(highScore);
+    document.getElementById("level").textContent = Math.floor(level);
+    document.getElementById("coins").textContent = Math.floor(coins);
     document.getElementById("bagCount").textContent = document.querySelectorAll(".bag").length;
-    document.getElementById("swordCount").textContent = swordHits;
+    document.getElementById("swordCount").textContent = Math.floor(swordHits);
 }
 
 function updateQuestUI() {
@@ -985,19 +1169,103 @@ function checkAchievements() {
 
 function openRestartModal() { document.getElementById("restartModal").style.display = "flex"; gamePaused = true; }
 function openUpgradesModal() { updateUpgradesUI(); document.getElementById("upgradesModal").style.display = "flex"; gamePaused = true; }
+function openStatsModal() {
+    document.getElementById("stPunches").textContent = totalPunches;
+    document.getElementById("stKills").textContent = totalKills;
+    document.getElementById("stBosses").textContent = totalBossesDefeated;
+    document.getElementById("stCrits").textContent = totalCrits;
+    document.getElementById("stMaxCombo").textContent = maxComboStreak + "x";
+    document.getElementById("statsModal").style.display = "flex";
+    gamePaused = true;
+}
 function closeModal(id) { document.getElementById(id).style.display = "none"; gamePaused = false; updateActivePowerupsUI(); }
 
 function confirmNewGame() {
     const savedHighScore = localStorage.highScore || 0;
+    
+    // Completely wipe all stored data
     localStorage.clear();
+    
+    // Restore High Score and reset state variables to full fresh default
     localStorage.highScore = savedHighScore;
+    highScore = Number(savedHighScore);
+    maxHearts = 9;
+    hearts = 9;
+    score = 0;
+    coins = 0;
+    level = 1;
+    swordHits = 0;
+    totalKills = 0;
+    totalBossesDefeated = 0;
+    totalPunches = 0;
+    totalCrits = 0;
+    maxComboStreak = 0;
+    
+    upgPower = 0;
+    upgCrit = 0;
+    upgAuto = 0;
+    upgMagnet = 0;
+    gloveSkin = "🥊";
+    activeGloveType = "standard";
+    ownedGloves = { standard: true, fire: false, ice: false };
+    activeHat = "";
+    activePet = "";
+    
+    freezeActive = false;
+    rageActive = false;
+    combo = 0;
+    
+    saveGame();
     location.reload();
 }
 
+function continueGame() {
+    if (coins >= 1000) {
+        coins -= 1000;
+        hearts = 5;
+        updateHearts();
+        updateScoreboard();
+        closeModal("gameOverModal");
+        if (document.querySelectorAll(".bag").length === 0) createBag();
+    } else {
+        popup("❌ Need 1000 Coins to Continue!", "red", arena.clientWidth / 2 - 110, 50);
+    }
+}
+
 function updateHearts() {
-    let text = "";
-    for (let i = 0; i < 5; i++) text += (i < hearts) ? "❤️" : "🖤";
-    document.getElementById("hearts").textContent = text;
+    let html = "";
+    let wholeHearts = Math.floor(hearts);
+    let hasHalf = (hearts - wholeHearts) >= 0.5;
+
+    for (let i = 0; i < maxHearts; i++) {
+        if (i < wholeHearts) {
+            html += "❤️";
+        } else if (i === wholeHearts && hasHalf) {
+            html += "💔";
+        } else {
+            html += "🖤";
+        }
+    }
+    document.getElementById("hearts").textContent = html;
+}
+
+function buyExtraHearts() {
+    if (maxHearts >= 14) {
+        popup("❌ Max Heart Limit Reached!", "orange", arena.clientWidth / 2 - 100, 50);
+        return;
+    }
+    if (coins >= 400) {
+        coins -= 400;
+        maxHearts = Math.min(14, maxHearts + 5);
+        hearts = maxHearts;
+        updateHearts();
+        updateScoreboard();
+        updateActivePowerupsUI();
+        saveGame();
+        popup("💖 MAX HEARTS INCREASED!", "#ff00a0", arena.clientWidth / 2 - 110, 50);
+    } else {
+        popup("❌ Need 400 Coins!", "red", arena.clientWidth / 2 - 60, 50);
+    }
 }
 
 function flashDamage() {
@@ -1007,8 +1275,24 @@ function flashDamage() {
 
 function setGloveSkin(skin) {
     gloveSkin = skin;
-    glove.textContent = skin;
+    if (activeGloveType === 'standard') glove.textContent = skin;
     saveGame();
+}
+
+function animateGloveToTarget(targetX, targetY) {
+    const arenaRect = arena.getBoundingClientRect();
+    const startX = arenaRect.width - 60;
+    const startY = arenaRect.height - 60;
+
+    const deltaX = targetX - startX;
+    const deltaY = targetY - startY;
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+    glove.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${angle}deg) scale(1.35)`;
+    
+    setTimeout(() => {
+        glove.style.transform = `translate(0px, 0px) rotate(0deg) scale(1)`;
+    }, 120);
 }
 
 function toggleArtifact(key) {
@@ -1023,6 +1307,12 @@ function toggleArtifact(key) {
 }
 
 function updateUpgradesUI() {
+    const buyFireBtn = document.getElementById("buyFireBtn");
+    const buyIceBtn = document.getElementById("buyIceBtn");
+
+    buyFireBtn.textContent = ownedGloves.fire ? "✅ Owned" : "750 🪙";
+    buyIceBtn.textContent = ownedGloves.ice ? "✅ Owned" : "750 🪙";
+
     document.getElementById("basePwrLvl").textContent = upgPower + 1;
     document.getElementById("basePwrBonus").textContent = upgPower * 5;
     document.getElementById("powerCost").textContent = (upgPower + 1) * 150;
@@ -1110,6 +1400,13 @@ function triggerShake() {
     arena.classList.add("shake");
 }
 
+function triggerZoomPulse() {
+    arena.classList.remove("zoomPulse");
+    void arena.offsetWidth;
+    arena.classList.add("zoomPulse");
+    setTimeout(() => arena.classList.remove("zoomPulse"), 100);
+}
+
 function popup(text, color, x, y) {
     const p = document.createElement("div");
     p.innerHTML = text;
@@ -1133,13 +1430,12 @@ function popup(text, color, x, y) {
     setTimeout(() => p.remove(), 800);
 }
 
-// ULTIMATE SCREEN CLEAR
 function triggerUltimate() {
-    if (coins < 800) {
-        popup("❌ Need 800 Coins!", "red", arena.clientWidth / 2 - 60, 50);
+    if (coins < 3000) {
+        popup("❌ Need 3000 Coins!", "red", arena.clientWidth / 2 - 70, 50);
         return;
     }
-    coins -= 800;
+    coins -= 3000;
     triggerShake();
     playSound("explosion");
 
@@ -1166,7 +1462,6 @@ function triggerUltimate() {
     }, 500);
 }
 
-// PINATA RUSH
 function spawnPinata() {
     if (document.querySelector(".pinata")) {
         popup("🪅 Piñata Already Active!", "orange", arena.clientWidth / 2 - 90, 50);
@@ -1180,6 +1475,8 @@ function spawnPinata() {
 
     const bag = document.createElement("div");
     bag.className = "bag pinata";
+    bag.isHighTier = true;
+    bag.requiredGlove = "standard";
     bag.hp = 800; bag.maxHp = 800; bag.reward = 8000; bag.timeLeft = 12;
 
     const size = 110;
@@ -1222,9 +1519,12 @@ function spawnPinata() {
 
     bag.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         coins += 35;
-        popup("🪙 +35", "gold", e.clientX - arena.getBoundingClientRect().left, e.clientY - arena.getBoundingClientRect().top);
-        punch(bag, false, false, e.clientX, e.clientY);
+        const cX = e.clientX || e.pageX || (bag.getBoundingClientRect().left + 20);
+        const cY = e.clientY || e.pageY || bag.getBoundingClientRect().top;
+        popup("🪙 +35", "gold", cX - arena.getBoundingClientRect().left, cY - arena.getBoundingClientRect().top);
+        punch(bag, false, false, cX, cY);
     });
 
     bagsContainer.appendChild(bag);
@@ -1235,13 +1535,13 @@ function spawnPinata() {
         if (bag.timeLeft <= 0) {
             clearInterval(bag.timerInterval);
             bag.remove();
+            if (document.querySelectorAll(".bag").length === 0) createBag();
         }
     }, 1000);
 
     updateScoreboard(); saveGame();
 }
 
-// DROPPED INTERACTIVE LOOT ITEMS
 function spawnDroppedItem(x, y) {
     const item = document.createElement("div");
     item.className = "dropItem";
@@ -1259,7 +1559,7 @@ function spawnDroppedItem(x, y) {
         playSound("coin");
         advanceQuestProgress('loot');
         if (type === "heart") {
-            hearts = Math.min(5, hearts + 1);
+            hearts = Math.min(maxHearts, hearts + 1);
             popup("❤️ +1 HEART", "pink", parseFloat(item.style.left), parseFloat(item.style.top));
             updateHearts();
         } else if (type === "coin") {
@@ -1280,6 +1580,7 @@ function spawnDroppedItem(x, y) {
 
     item.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         item.collect();
     });
 
@@ -1287,41 +1588,105 @@ function spawnDroppedItem(x, y) {
     setTimeout(() => { if (item.parentNode) item.remove(); }, 8000);
 }
 
-// CREATE BAG - SPECIAL & TIERED BAG LOGIC
+function createMiniBag(x, y) {
+    const bag = document.createElement("div");
+    bag.className = "bag minibag";
+    bag.requiredGlove = "standard";
+    bag.hp = 20; bag.maxHp = 20; bag.reward = 150; bag.timeLeft = 8;
+
+    const size = 50;
+    bag.style.width = size + "px";
+    bag.style.height = (size * 1.2) + "px";
+    bag.style.left = Math.max(10, Math.min(arena.clientWidth - size - 10, x + (Math.random() * 40 - 20))) + "px";
+    bag.style.top = Math.max(10, Math.min(arena.clientHeight - size - 10, y + (Math.random() * 40 - 20))) + "px";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "bagWrapper";
+    wrapper.style.width = "25px"; wrapper.style.height = "25px";
+    const img = document.createElement("img");
+    img.src = uploadedPhoto || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><circle cx='25' cy='25' r='20' fill='%23ccc'/></svg>";
+    const faceOverlay = document.createElement("div");
+    faceOverlay.className = "faceOverlay";
+    wrapper.appendChild(img); wrapper.appendChild(faceOverlay);
+
+    const timerText = document.createElement("div");
+    timerText.className = "timerText";
+    timerText.innerHTML = "⏳ 8";
+
+    bag.appendChild(wrapper); bag.appendChild(timerText);
+
+    bag.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const cX = e.clientX || e.pageX || (bag.getBoundingClientRect().left + 15);
+        const cY = e.clientY || e.pageY || bag.getBoundingClientRect().top;
+        punch(bag, false, false, cX, cY);
+    });
+
+    bag.timerInterval = setInterval(() => {
+        if (!freezeActive && !gamePaused) bag.timeLeft--;
+        timerText.innerHTML = "⏳ " + bag.timeLeft;
+        if (bag.timeLeft <= 0) {
+            clearInterval(bag.timerInterval);
+            bag.remove();
+            if (document.querySelectorAll(".bag").length === 0) createBag();
+        }
+    }, 1000);
+
+    bagsContainer.appendChild(bag);
+}
+
 function createBag() {
     const bag = document.createElement("div");
     bag.className = "bag";
 
-    let baseHp = 40 + level * 8; 
+    let baseHp = Math.floor(40 + level * 8); 
     let hp = baseHp;
     let reward = 300;
     let timer = 30;
     let typeName = "🥊 NORMAL";
+    bag.isHighTier = false;
+    bag.requiredGlove = "standard";
 
     const specialRoll = Math.random();
-    if (specialRoll < 0.08) {
+
+    if (specialRoll < 0.06) {
+        bag.classList.add("inferno");
+        bag.requiredGlove = "fire";
+        hp = Math.floor(baseHp * 1.3); reward = 1000; timer = 16; typeName = "🔥 INFERNO";
+    } else if (specialRoll < 0.12) {
+        bag.classList.add("frost");
+        bag.requiredGlove = "ice";
+        hp = Math.floor(baseHp * 1.3); reward = 1000; timer = 16; typeName = "🧊 FROST";
+    } else if (specialRoll < 0.24) {
+        bag.classList.add("splitter");
+        bag.isSplitter = true; hp = Math.floor(baseHp * 1.1); reward = 600; timer = 16; typeName = "✂️ SPLITTER";
+    } else if (specialRoll < 0.30) {
         bag.classList.add("bomb");
-        bag.isBomb = true; hp = 1; timer = 8; typeName = "💣 BOMB!";
-    } else if (specialRoll < 0.16) {
+        bag.isBomb = true; hp = 1; timer = 16; typeName = "💣 BOMB!";
+    } else if (specialRoll < 0.36) {
         bag.classList.add("ghost");
         bag.isGhost = true; hp = baseHp; reward = 800; timer = 15; typeName = "👻 GHOST";
-    } else if (specialRoll < 0.22) {
+    } else if (specialRoll < 0.42) {
         bag.classList.add("healer");
-        bag.isHealer = true; hp = baseHp * 1.2; reward = 900; timer = 20; typeName = "💚 HEALER";
-    } else if (specialRoll < 0.28) {
+        bag.isHealer = true; hp = Math.floor(baseHp * 1.2); reward = 900; timer = 20; typeName = "💚 HEALER";
+    } else if (specialRoll < 0.48) {
         bag.classList.add("combobreaker");
-        bag.isComboBreaker = true; hp = baseHp * 0.7; reward = 500; timer = 10; typeName = "⚡ NO-COMBO";
-    } else if (specialRoll < 0.36) {
+        bag.isComboBreaker = true; hp = Math.floor(baseHp * 0.7); reward = 500; timer = 10; typeName = "⚡ NO-COMBO";
+    } else if (specialRoll < 0.54) {
         bag.classList.add("goblin");
-        bag.isGoblin = true; hp = baseHp * 0.8; reward = 1200; timer = 6; typeName = "💰 GOBLIN";
+        bag.isGoblin = true; hp = Math.floor(baseHp * 0.8); reward = 1200; timer = 6; typeName = "💰 GOBLIN";
     } else if (level % 25 === 0) {
         bag.classList.add("champion");
-        hp = baseHp * 8; reward = 15000; timer = 120; typeName = "👑 CHAMPION";
+        bag.isHighTier = true;
+        hp = Math.floor(baseHp * 8); reward = 15000; timer = 120; typeName = "👑 CHAMPION";
     } else if (level % 10 === 0) {
         bag.classList.add("boss");
-        hp = baseHp * 4; reward = 5000; timer = 60; typeName = "👹 BOSS";
+        bag.isHighTier = true;
+        hp = Math.floor(baseHp * 4); reward = 5000; timer = 60; typeName = "👹 BOSS";
     } else if (level % 5 === 0) {
         bag.classList.add("elite");
+        bag.isHighTier = true;
         hp = Math.floor(baseHp * 2); reward = 2500; timer = 15; typeName = "⚡ ELITE";
     }
 
@@ -1409,17 +1774,21 @@ function createBag() {
 
     bag.addEventListener("pointerdown", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         let bullseyeHit = false;
         const bull = bag.querySelector(".bullseye");
+        const clickX = e.clientX || e.pageX || (bag.getBoundingClientRect().left + size / 2);
+        const clickY = e.clientY || e.pageY || (bag.getBoundingClientRect().top + size / 2);
+
         if (bull) {
             const rect = bull.getBoundingClientRect();
-            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            if (clickX >= rect.left && clickX <= rect.right && clickY >= rect.top && clickY <= rect.bottom) {
                 bullseyeHit = true;
                 bull.remove();
                 bag.hasBullseye = false;
             }
         }
-        punch(bag, false, bullseyeHit, e.clientX, e.clientY);
+        punch(bag, false, bullseyeHit, clickX, clickY);
     });
 
     if (bag.isGhost) {
@@ -1479,19 +1848,51 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
     const pX = clickX ? (clickX - arenaRect.left) : (rect.left - arenaRect.left + 20);
     const pY = clickY ? (clickY - arenaRect.top) : (rect.top - arenaRect.top);
 
+    // Strict Element-to-Glove Check: Each glove type can ONLY attack its corresponding bag type
+    if (bag.requiredGlove && activeGloveType !== bag.requiredGlove) {
+        playSound("shield");
+        popup("❌ Needs " + bag.requiredGlove.toUpperCase() + " Glove!", "orange", pX, pY);
+        return;
+    }
+
+    animateGloveToTarget(pX, pY);
+
     if (bag.isBomb) {
         playSound("explosion");
         triggerShake();
-        flashDamage();
-        popup("💥 BOMB EXPLODED! -1 HEART", "red", pX, pY);
-        hearts = Math.max(0, hearts - 1);
-        updateHearts();
+        popup("💥 BOMB BLAST! Arena Damaged!", "orange", pX, pY);
         clearInterval(bag.timerInterval);
         bag.remove();
 
-        if (hearts <= 0) gameOver();
-        else createBag();
+        document.querySelectorAll(".bag:not(.bomb)").forEach(otherBag => {
+            const bRect = otherBag.getBoundingClientRect();
+            createParticles(bRect.left - arenaRect.left + 20, bRect.top - arenaRect.top + 20, "#ff6600", 10);
+            otherBag.hp -= 150;
+            if (otherBag.hp <= 0) {
+                score += otherBag.reward || 300;
+                coins += Math.floor((otherBag.reward || 300) / 10);
+                clearInterval(otherBag.timerInterval);
+                if (otherBag.ghostInterval) clearInterval(otherBag.ghostInterval);
+                otherBag.remove();
+            } else {
+                const hpText = otherBag.querySelector(".hpText");
+                const hpBar = otherBag.querySelector(".hpBar");
+                if (hpText) hpText.textContent = Math.max(0, Math.floor(otherBag.hp)) + "/" + Math.floor(otherBag.maxHp);
+                if (hpBar) hpBar.style.width = Math.max(0, (otherBag.hp / otherBag.maxHp) * 100) + "%";
+            }
+        });
+
+        if (document.querySelectorAll(".bag").length === 0) createBag();
+        updateScoreboard(); saveGame();
         return;
+    }
+
+    if (bag.isHealer) {
+        if (hearts < maxHearts) {
+            hearts = Math.min(maxHearts, hearts + 0.5);
+            updateHearts();
+            popup("💚 +0.5 HEART RECOVERED!", "#00ff88", pX, pY - 20);
+        }
     }
 
     if (bag.isComboBreaker) {
@@ -1516,22 +1917,20 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
     triggerVib(isAuto ? 8 : 22);
 
     punchCount++;
-    if (artifacts.vampire.equipped && punchCount % 50 === 0 && hearts < 5) {
-        hearts++;
+    totalPunches++;
+    if (artifacts.vampire.equipped && punchCount % 50 === 0 && hearts < maxHearts) {
+        hearts = Math.min(maxHearts, hearts + 0.5);
         updateHearts();
-        popup("🩸 VAMPIRE HEAL +1 ❤️", "pink", pX, pY - 20);
+        popup("🩸 VAMPIRE HEAL +0.5 ❤️", "pink", pX, pY - 20);
     }
 
     const swingDir = Math.random() > 0.5 ? 12 : -12;
     bag.style.transform = `rotate(${swingDir}deg) scale(0.92)`;
     setTimeout(() => { bag.style.transform = "rotate(0deg) scale(1)"; }, 120);
 
-    glove.classList.remove("punch");
-    void glove.offsetWidth;
-    glove.classList.add("punch");
-
     clearTimeout(comboTimer);
     if (!bag.isComboBreaker) combo++;
+    if (combo > maxComboStreak) maxComboStreak = combo;
 
     if (combo === 5) triggerAnnouncer("TRIPLE HIT!");
     if (combo === 10) triggerAnnouncer("RAMPAGE!");
@@ -1571,10 +1970,12 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
     const audioPitch = Math.min(2.0, 1.0 + (combo * 0.04));
 
     if (critical) {
+        totalCrits++;
         advanceQuestProgress('crit');
         hit *= bullseyeHit ? 4 : 3;
         playSound("crit", audioPitch);
         triggerShake();
+        triggerZoomPulse();
         document.getElementById("combo").innerHTML = bullseyeHit ? "🎯 BULLSEYE 4x!" : "⚡ CRITICAL!";
     } else {
         playSound("punch", audioPitch);
@@ -1590,20 +1991,22 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
     }
 
     createParticles(pX, pY, critical ? "#ffaa00" : "#ff3300", critical ? 12 : 6);
-    popup("💥 -" + hit, critical ? "gold" : "yellow", pX, pY);
+    popup("💥 -" + Math.floor(hit), critical ? "gold" : "yellow", pX, pY);
 
     const hpText = bag.querySelector(".hpText");
     const hpBar = bag.querySelector(".hpBar");
     const faceOverlay = bag.querySelector(".faceOverlay");
 
-    hpText.textContent = Math.max(0, bag.hp) + "/" + bag.maxHp;
+    if (hpText) hpText.textContent = Math.max(0, Math.floor(bag.hp)) + "/" + Math.floor(bag.maxHp);
     const percent = Math.max(0, (bag.hp / bag.maxHp) * 100);
-    hpBar.style.width = percent + "%";
+    if (hpBar) hpBar.style.width = percent + "%";
 
-    if (percent <= 0) faceOverlay.textContent = "😵";
-    else if (percent <= 40) faceOverlay.textContent = "🥴";
-    else if (percent <= 70) faceOverlay.textContent = "😠";
-    else faceOverlay.textContent = "";
+    if (faceOverlay) {
+        if (percent <= 0) faceOverlay.textContent = "😵";
+        else if (percent <= 40) faceOverlay.textContent = "🥴";
+        else if (percent <= 70) faceOverlay.textContent = "😠";
+        else faceOverlay.textContent = "";
+    }
 
     let oldLevel = level;
     level = Math.floor(score / 2500) + 1;
@@ -1631,14 +2034,29 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
         if (bag.ghostInterval) clearInterval(bag.ghostInterval);
 
         createParticles(rect.left - arenaRect.left + 40, rect.top - arenaRect.top + 40, "#ffffff", 20);
-        spawnDroppedItem(rect.left - arenaRect.left + 20, rect.top - arenaRect.top + 20);
-        
+
+        if (bag.isSplitter) {
+            const splitCount = Math.floor(Math.random() * 4) + 2;
+            for (let i = 0; i < splitCount; i++) {
+                createMiniBag(rect.left - arenaRect.left + (i * 15), rect.top - arenaRect.top + (i * 15));
+            }
+        }
+
+        if (bag.isHighTier && Math.random() < 0.15) {
+            spawnDroppedItem(rect.left - arenaRect.left + 20, rect.top - arenaRect.top + 20);
+        }
+
         bag.remove();
 
         const desiredBags = Math.min(5, Math.floor(level / 10) + 1);
         while (document.querySelectorAll(".bag").length < desiredBags) {
             createBag();
         }
+    }
+
+    // Ensure bags reset/respawn if all items in shot/arena are destroyed
+    if (document.querySelectorAll(".bag").length === 0) {
+        createBag();
     }
 
     updateActivePowerupsUI(); saveGame(); updateScoreboard();
@@ -1690,17 +2108,16 @@ function buyFreezeTime() {
 }
 
 function gameOver() {
+    gamePaused = true;
     document.getElementById("combo").innerHTML = "☠️ GAME OVER";
-    if (score > highScore) localStorage.highScore = score;
 
-    localStorage.removeItem("score");
-    localStorage.removeItem("level");
-    localStorage.removeItem("hearts");
-    localStorage.removeItem("coins");
-    localStorage.removeItem("swordHits");
-    localStorage.removeItem("totalKills");
+    if (score > highScore) {
+        highScore = score;
+        localStorage.highScore = highScore;
+    }
 
-    setTimeout(() => { location.reload(); }, 2500);
+    document.getElementById("finalScore").textContent = Math.floor(score);
+    document.getElementById("gameOverModal").style.display = "flex";
 }
 
 document.getElementById("upload").addEventListener("change", (e) => {
