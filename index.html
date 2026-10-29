@@ -314,9 +314,11 @@ h1 {
     position: absolute;
     top: 15px;
     left: 15px;
-    font-size: 28px;
+    font-size: 24px;
     z-index: 900;
     pointer-events: none;
+    display: flex;
+    gap: 4px;
     animation: petFloat 2s ease-in-out infinite alternate;
 }
 
@@ -841,6 +843,7 @@ h1 {
         <h2>☠️ GAME OVER</h2>
         <p>You ran out of lives!</p>
         <p>Final Score: <strong id="finalScore">0</strong></p>
+        <button id="adContinueBtn" class="continueBtn" onclick="watchAdToRevive()">📺 Watch Ad for Full HP (<span id="adReviveCount">2</span>/2 left)</button>
         <button class="continueBtn" onclick="continueGame()">❤️ Continue (+3 Hearts for 3000 🪙)</button>
         <button class="confirmBtn" onclick="confirmNewGame()">🔄 New Game (Reset All Except High Score)</button>
     </div>
@@ -927,7 +930,7 @@ h1 {
         </div>
 
         <h3>🐉 Sidekick Pets</h3>
-        <button onclick="setPet('')" style="margin-bottom:6px;">❌ Unequip Pet</button>
+        <button onclick="setPet('')" style="margin-bottom:6px;">❌ Unequip All Pets</button>
         
         <div class="petCategoryHeader">🪙 COIN PETS (ELEMENTAL DAMAGE - MAX 2 SLOTS)</div>
         <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
@@ -1175,7 +1178,15 @@ let gamePaused = false;
 let uploadedPhoto = localStorage.photo || "";
 let currentTheme = localStorage.currentTheme || "cyberpunk";
 let activeHat = localStorage.activeHat || "";
-let activePet = localStorage.activePet || "";
+
+let activePets = [];
+if (localStorage.activePets) {
+    try { activePets = JSON.parse(localStorage.activePets); } catch(e) {
+        if (localStorage.activePet) activePets = [localStorage.activePet];
+    }
+} else if (localStorage.activePet) {
+    activePets = [localStorage.activePet];
+}
 
 let upgPower = Number(localStorage.upgPower) || 0;
 let upgCrit = Number(localStorage.upgCrit) || 0;
@@ -1206,6 +1217,7 @@ if (localStorage.artifacts) {
 }
 
 let punchCount = 0;
+let lastMilestoneSpawnedLevel = 0;
 
 let achievements = {
     bossSlayer: { title: "👹 Boss Slayer", desc: "Defeat 5 Bosses (+10% Bonus Coins)", unlocked: false },
@@ -1309,7 +1321,7 @@ function gameLoop(now) {
         updateBagTimers(deltaTime);
 
         autoTimerAcc += deltaTime;
-        if (autoTimerAcc >= 1.2) {
+        if (autoTimerAcc >= 4.5) {
             autoTimerAcc = 0;
             if (upgAuto > 0 && activeBags.length > 0) {
                 const nonBombs = activeBags.filter(b => !b.isBomb);
@@ -1318,43 +1330,45 @@ function gameLoop(now) {
                     punch(randomBag, true);
                 }
             }
-            if (activePet !== "" && activeBags.length > 0) {
+            if (activePets.length > 0 && activeBags.length > 0) {
                 const nonBombs = activeBags.filter(b => !b.isBomb);
                 if (nonBombs.length > 0) {
-                    const randomBag = nonBombs[Math.floor(Math.random() * nonBombs.length)];
-                    const rect = randomBag.element.getBoundingClientRect();
-                    const arenaRect = arena.getBoundingClientRect();
-                    
-                    if (activePet === '🐉') {
-                        popup("🐉 FIRE BLAST!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        randomBag.isBurning = true;
-                        randomBag.element.classList.add("burning");
-                    } else if (activePet === '🤖') {
-                        popup("🤖 SHOCK DISCHARGE!", "yellow", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        applyChainLightning(randomBag, 35);
-                    } else if (activePet === '🧊') {
-                        popup("🧊 ICE BLAST!", "cyan", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        randomBag.timeLeft += 2;
-                    } else if (activePet === '🧪') {
-                        popup("🧪 VENOM SPLASH!", "#00ff66", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        randomBag.isPoisoned = true;
-                        randomBag.poisonStacks = (randomBag.poisonStacks || 0) + 1;
-                        randomBag.element.classList.add("poisoned");
-                    } else if (activePet === '🦅') {
-                        popup("🦅 PHOENIX STRIKE!", "#ffaa00", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        randomBag.timeLeft += 2;
-                        randomBag.isBurning = true;
-                        randomBag.element.classList.add("burning");
-                    } else if (activePet === '⚡') {
-                        popup("⚡ VOLT TIGER CLAW!", "#00ffff", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                        applyChainLightning(randomBag, 50);
-                        randomBag.isPoisoned = true;
-                        randomBag.poisonStacks = (randomBag.poisonStacks || 0) + 1;
-                        randomBag.element.classList.add("poisoned");
-                    } else {
-                        popup(activePet + " ATTACK!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
-                    }
-                    applyDirectDamage(randomBag, Math.floor(10 + upgPower * 2), "🐾 -", "#00ffff");
+                    activePets.forEach(pet => {
+                        const randomBag = nonBombs[Math.floor(Math.random() * nonBombs.length)];
+                        const rect = randomBag.element.getBoundingClientRect();
+                        const arenaRect = arena.getBoundingClientRect();
+                        
+                        if (pet === '🐉') {
+                            popup("🐉 FIRE BLAST!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            randomBag.isBurning = true;
+                            randomBag.element.classList.add("burning");
+                        } else if (pet === '🤖') {
+                            popup("🤖 SHOCK DISCHARGE!", "yellow", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            applyChainLightning(randomBag, 35);
+                        } else if (pet === '🧊') {
+                            popup("🧊 ICE BLAST!", "cyan", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            randomBag.timeLeft += 2;
+                        } else if (pet === '🧪') {
+                            popup("🧪 VENOM SPLASH!", "#00ff66", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            randomBag.isPoisoned = true;
+                            randomBag.poisonStacks = (randomBag.poisonStacks || 0) + 1;
+                            randomBag.element.classList.add("poisoned");
+                        } else if (pet === '🦅') {
+                            popup("🦅 PHOENIX STRIKE!", "#ffaa00", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            randomBag.timeLeft += 2;
+                            randomBag.isBurning = true;
+                            randomBag.element.classList.add("burning");
+                        } else if (pet === '⚡') {
+                            popup("⚡ VOLT TIGER CLAW!", "#00ffff", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            applyChainLightning(randomBag, 50);
+                            randomBag.isPoisoned = true;
+                            randomBag.poisonStacks = (randomBag.poisonStacks || 0) + 1;
+                            randomBag.element.classList.add("poisoned");
+                        } else {
+                            popup(pet + " ATTACK!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                        }
+                        applyDirectDamage(randomBag, Math.floor(10 + upgPower * 2), "🐾 -", "#00ffff");
+                    });
                 }
             }
         }
@@ -1465,7 +1479,7 @@ function updateBagTimers(dt) {
             const arenaRect = arena.getBoundingClientRect();
 
             if (!bag.isBomb) {
-                let heartLoss = (bag.isGolden || bag.isRainbow || bag.isHighTier || bag.isBoss || bag.isNinja || bag.isBouncy || bag.isSplitter || bag.isHealer) ? 1 : 2;
+                let heartLoss = (bag.isGolden || bag.isRainbow || bag.isHighTier || bag.isBoss || bag.isNinja || bag.isBouncy || bag.isSplitter || bag.isHealer) ? 1 : 1.5;
                 popup(`💔 ${heartLoss} HEART${heartLoss > 1 ? 'S' : ''} LOST`, "red", rect.left - arenaRect.left, rect.top - arenaRect.top);
                 hearts = Math.max(0, hearts - heartLoss);
                 flashDamage();
@@ -1521,7 +1535,7 @@ function saveGame() {
     localStorage.gloveSkin = gloveSkin;
     localStorage.currentTheme = currentTheme;
     localStorage.activeHat = activeHat;
-    localStorage.activePet = activePet;
+    localStorage.activePets = JSON.stringify(activePets);
     localStorage.petDogUnlocked = petDogUnlocked;
     localStorage.petCatUnlocked = petCatUnlocked;
     localStorage.petPhoenixUnlocked = petPhoenixUnlocked;
@@ -1620,17 +1634,35 @@ function setHat(hat) {
 }
 
 function setPet(pet, cost = 0) {
-    if (cost > 0 && activePet !== pet) {
-        if (coins < cost) {
-            popup("❌ Need " + cost + " Coins!", "red", arena.clientWidth / 2 - 70, 50);
+    if (pet === "") {
+        activePets = [];
+        setPetUI();
+        saveGame();
+        updateScoreboard();
+        return;
+    }
+
+    if (activePets.includes(pet)) {
+        activePets = activePets.filter(p => p !== pet);
+    } else {
+        if (activePets.length >= 2) {
+            popup("❌ Max 2 Pets Equipped!", "red", arena.clientWidth / 2 - 80, 50);
             return;
         }
-        coins -= cost;
+        if (cost > 0) {
+            if (coins < cost) {
+                popup("❌ Need " + cost + " Coins!", "red", arena.clientWidth / 2 - 70, 50);
+                return;
+            }
+            coins -= cost;
+        }
+        activePets.push(pet);
     }
-    activePet = pet;
+
     setPetUI();
     saveGame();
     updateScoreboard();
+    updateUpgradesUI();
 }
 
 function handlePetAdUnlock(pet) {
@@ -1693,7 +1725,56 @@ function finishAd() {
     saveGame();
 }
 
-function setPetUI() { document.getElementById("activePet").textContent = activePet; }
+function setPetUI() { 
+    document.getElementById("activePet").textContent = activePets.join(" "); 
+}
+
+let adReviveUsesLeft = 2;
+
+function watchAdToRevive() {
+    if (adReviveUsesLeft <= 0) {
+        popup("❌ No Revives Left!", "red", arena.clientWidth / 2 - 60, 50);
+        return;
+    }
+
+    document.getElementById("adTitle").textContent = "📺 Watching Revive Ad...";
+    document.getElementById("adSub").textContent = "Please wait to restore full HP!";
+    document.getElementById("adCloseBtn").style.display = "none";
+    document.getElementById("adProgressBar").style.width = "0%";
+    document.getElementById("adModal").style.display = "flex";
+    document.getElementById("gameOverModal").style.display = "none";
+
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 20;
+        document.getElementById("adProgressBar").style.width = progress + "%";
+        if (progress >= 100) {
+            clearInterval(interval);
+            document.getElementById("adTitle").textContent = "🎉 Ad Complete!";
+            document.getElementById("adSub").textContent = "Click below to claim your Full HP!";
+            document.getElementById("adCloseBtn").style.display = "inline-block";
+            document.getElementById("adCloseBtn").onclick = finishReviveAd;
+        }
+    }, 300);
+}
+
+function finishReviveAd() {
+    document.getElementById("adModal").style.display = "none";
+    document.getElementById("adCloseBtn").onclick = finishAd;
+
+    adReviveUsesLeft--;
+    hearts = maxHearts;
+    updateHearts();
+    gamePaused = false;
+
+    document.getElementById("adReviveCount").textContent = adReviveUsesLeft;
+    if (adReviveUsesLeft <= 0) {
+        document.getElementById("adContinueBtn").style.display = "none";
+    }
+
+    popup("✨ FULL HP RESTORED!", "#00ff88", arena.clientWidth / 2 - 90, 50);
+    if (activeBags.length === 0) createBag();
+}
 
 function triggerAnnouncer(text) {
     const el = document.getElementById("announcerText");
@@ -1848,7 +1929,7 @@ function confirmNewGame() {
     const savedMonthly = localStorage.monthlyHighScore || 0;
     
     localStorage.clear();
-    
+
     localStorage.highScore = savedHighScore;
     localStorage.weeklyHighScore = savedWeekly;
     localStorage.monthlyHighScore = savedMonthly;
@@ -1876,7 +1957,7 @@ function confirmNewGame() {
     ownedGloves = { standard: true, fire: false, ice: false, lightning: false, toxic: false };
     elementalLevels = { fire: 0, ice: 0, lightning: 0, toxic: 0 };
     activeHat = "";
-    activePet = "";
+    activePets = [];
     petDogUnlocked = false;
     petCatUnlocked = false;
     petPhoenixUnlocked = false;
@@ -1886,6 +1967,13 @@ function confirmNewGame() {
     rageActive = false;
     combo = 0;
     
+    adReviveUsesLeft = 2;
+    const adBtn = document.getElementById("adContinueBtn");
+    if (adBtn) {
+        adBtn.style.display = "inline-block";
+        document.getElementById("adReviveCount").textContent = "2";
+    }
+
     saveGame();
     location.reload();
 }
@@ -2318,73 +2406,88 @@ function spawnBagLogic(forcedType = "normal") {
         moveSpeed: (Math.random() - 0.5) * 2.0
     };
 
-    const specialRoll = Math.random();
-
-    if (specialRoll < 0.12) {
-        bagElem.classList.add("rainbow");
-        bagObj.isRainbow = true;
-        bagObj.isHighTier = true;
-        hp = Math.floor(baseHp * 2.0); reward = 10000; timer = 15; typeName = "🌈 RAINBOW";
-    } else if (specialRoll < 0.20) {
-        bagElem.classList.add("ninja");
-        bagObj.isNinja = true;
-        bagObj.isHighTier = true;
-        hp = 3; bagObj.ninjaHitsLeft = 3; reward = 5000; timer = 15; typeName = "🥷 NINJA (3 Hits)";
-    } else if (specialRoll < 0.35) {
-        bagElem.classList.add("golden");
-        bagObj.isGolden = true;
-        bagObj.isHighTier = true;
-        hp = Math.floor(baseHp * 1.5); reward = 7500; timer = 12; typeName = "🪙 GOLDEN";
-    } else if (level >= 20 && specialRoll < 0.38) {
-        bagElem.classList.add("inferno");
-        bagObj.elementType = "ice"; 
-        hp = Math.floor(baseHp * 1.3); reward = 3000; timer = 16; typeName = "🔥 INFERNO";
-    } else if (level >= 20 && specialRoll < 0.41) {
-        bagElem.classList.add("frost");
-        bagObj.elementType = "fire"; 
-        hp = Math.floor(baseHp * 1.3); reward = 3000; timer = 16; typeName = "🧊 FROST";
-    } else if (level >= 20 && specialRoll < 0.44) {
-        bagElem.classList.add("shock");
-        bagObj.elementType = "shock";
-        hp = Math.floor(baseHp * 1.4); reward = 3600; timer = 16; typeName = "⚡ SHOCK";
-    } else if (level >= 20 && specialRoll < 0.47) {
-        bagElem.classList.add("toxic");
-        bagObj.elementType = "toxic";
-        hp = Math.floor(baseHp * 1.4); reward = 3600; timer = 16; typeName = "🧪 TOXIC";
-    } else if (specialRoll < 0.53) {
-        bagElem.classList.add("bouncy");
-        bagObj.isBouncy = true; hp = Math.floor(baseHp * 1.2); reward = 2400; timer = 20; typeName = "🌀 BOUNCY";
-    } else if (specialRoll < 0.59) {
-        bagElem.classList.add("splitter");
-        bagObj.isSplitter = true; hp = Math.floor(baseHp * 1.1); reward = 1800; timer = 16; typeName = "✂️ SPLITTER";
-    } else if (specialRoll < 0.65) {
-        bagElem.classList.add("bomb");
-        bagObj.isBomb = true; hp = 1; timer = 16; typeName = "💣 BOMB!";
-    } else if (specialRoll < 0.71) {
-        bagElem.classList.add("ghost");
-        bagObj.isGhost = true; hp = baseHp; reward = 2400; timer = 15; typeName = "👻 GHOST";
-    } else if (specialRoll < 0.77) {
-        bagElem.classList.add("healer");
-        bagObj.isHealer = true; hp = Math.floor(baseHp * 1.2); reward = 2700; timer = 20; typeName = "💚 HEALER";
-    } else if (specialRoll < 0.83) {
-        bagElem.classList.add("combobreaker");
-        bagObj.isComboBreaker = true; hp = Math.floor(baseHp * 0.7); reward = 1500; timer = 10; typeName = "⚡ NO-COMBO";
-    } else if (specialRoll < 0.89) {
-        bagElem.classList.add("goblin");
-        bagObj.isGoblin = true; hp = Math.floor(baseHp * 0.8); reward = 3600; timer = 6; typeName = "💰 GOBLIN";
-    } else if (level % 25 === 0) {
+    if (level % 25 === 0 && lastMilestoneSpawnedLevel !== level) {
+        lastMilestoneSpawnedLevel = level;
         bagElem.classList.add("champion");
         bagObj.isHighTier = true;
         hp = Math.floor(baseHp * 3); reward = 15000; timer = 90; typeName = "👑 CHAMPION";
-    } else if (level % 10 === 0) {
+        sizeMultiplier = 1.35;
+        
+        triggerSpawnWarning("⚠️ CHAMPION APPROACHING ⚠️", "LEVEL " + level + " MILESTONE", () => {});
+
+    } else if (level % 10 === 0 && lastMilestoneSpawnedLevel !== level) {
+        lastMilestoneSpawnedLevel = level;
         bagElem.classList.add("boss");
         bagObj.isHighTier = true;
         bagObj.isBoss = true;
         hp = Math.floor(baseHp * 2.5); reward = 8000; timer = 50; typeName = "👹 BOSS";
-    } else if (level % 5 === 0) {
+        sizeMultiplier = 1.25;
+        
+        triggerSpawnWarning("⚠️ CROSS SCREEN WARNING! ⚠️", "BOSS APPROACHING", () => {});
+
+    } else if (level % 5 === 0 && lastMilestoneSpawnedLevel !== level) {
+        lastMilestoneSpawnedLevel = level;
         bagElem.classList.add("elite");
         bagObj.isHighTier = true;
         hp = Math.floor(baseHp * 1.5); reward = 4000; timer = 20; typeName = "⚡ ELITE";
+        sizeMultiplier = 1.12;
+
+    } else {
+        const specialRoll = Math.random();
+
+        if (specialRoll < 0.12) {
+            bagElem.classList.add("rainbow");
+            bagObj.isRainbow = true;
+            bagObj.isHighTier = true;
+            hp = Math.floor(baseHp * 2.0); reward = 10000; timer = 15; typeName = "🌈 RAINBOW";
+        } else if (specialRoll < 0.20) {
+            bagElem.classList.add("ninja");
+            bagObj.isNinja = true;
+            bagObj.isHighTier = true;
+            hp = 3; bagObj.ninjaHitsLeft = 3; reward = 5000; timer = 15; typeName = "🥷 NINJA (3 Hits)";
+        } else if (specialRoll < 0.35) {
+            bagElem.classList.add("golden");
+            bagObj.isGolden = true;
+            bagObj.isHighTier = true;
+            hp = Math.floor(baseHp * 1.5); reward = 7500; timer = 12; typeName = "🪙 GOLDEN";
+        } else if (level >= 20 && specialRoll < 0.38) {
+            bagElem.classList.add("inferno");
+            bagObj.elementType = "ice"; 
+            hp = Math.floor(baseHp * 1.3); reward = 3000; timer = 16; typeName = "🔥 INFERNO";
+        } else if (level >= 20 && specialRoll < 0.41) {
+            bagElem.classList.add("frost");
+            bagObj.elementType = "fire"; 
+            hp = Math.floor(baseHp * 1.3); reward = 3000; timer = 16; typeName = "🧊 FROST";
+        } else if (level >= 20 && specialRoll < 0.44) {
+            bagElem.classList.add("shock");
+            bagObj.elementType = "shock";
+            hp = Math.floor(baseHp * 1.4); reward = 3600; timer = 16; typeName = "⚡ SHOCK";
+        } else if (level >= 20 && specialRoll < 0.47) {
+            bagElem.classList.add("toxic");
+            bagObj.elementType = "toxic";
+            hp = Math.floor(baseHp * 1.4); reward = 3600; timer = 16; typeName = "🧪 TOXIC";
+        } else if (specialRoll < 0.53) {
+            bagElem.classList.add("bouncy");
+            bagObj.isBouncy = true; hp = Math.floor(baseHp * 1.2); reward = 2400; timer = 20; typeName = "🌀 BOUNCY";
+        } else if (specialRoll < 0.59) {
+            bagElem.classList.add("splitter");
+            bagObj.isSplitter = true; hp = Math.floor(baseHp * 1.1); reward = 1800; timer = 16; typeName = "✂️ SPLITTER";
+        } else if (specialRoll < 0.65) {
+            bagElem.classList.add("bomb");
+            bagObj.isBomb = true; hp = 1; timer = 16; typeName = "💣 BOMB!";
+        } else if (specialRoll < 0.71) {
+            bagElem.classList.add("ghost");
+            bagObj.isGhost = true; hp = baseHp; reward = 2400; timer = 15; typeName = "👻 GHOST";
+        } else if (specialRoll < 0.77) {
+            bagElem.classList.add("healer");
+            bagObj.isHealer = true; hp = Math.floor(baseHp * 1.2); reward = 2700; timer = 20; typeName = "💚 HEALER";
+        } else if (specialRoll < 0.83) {
+            bagElem.classList.add("combobreaker");
+            bagObj.isComboBreaker = true; hp = Math.floor(baseHp * 0.7); reward = 1500; timer = 10; typeName = "⚡ NO-COMBO";
+        } else if (level >= 20 && specialRoll < 0.89) {
+            bagElem.classList.add("goblin");
+            bagObj.isGoblin = true; hp = Math.floor(baseHp * 0.8); reward = 3600; timer = 6; typeName = "💰 GOBLIN";
+        }
     }
 
     if (bagObj.isNinja) {
@@ -2532,7 +2635,7 @@ function handleBagKO(bag) {
     let coinGain = Math.floor(bag.reward / 10);
     if (bag.isRainbow) coinGain += 1000;
     if (artifacts.luckyCoin && artifacts.luckyCoin.equipped) coinGain = Math.floor(coinGain * 1.15);
-    if (activePet === '🐶') coinGain = Math.floor(coinGain * 1.20);
+    if (activePets.includes('🐶')) coinGain = Math.floor(coinGain * 1.20);
 
     score += bag.reward;
     coins += coinGain;
@@ -2577,6 +2680,37 @@ function gameOver() {
     document.getElementById("gameOverModal").style.display = "flex";
 }
 
+function applyGloveEffect(targetBag, type) {
+    if (type === 'fire') {
+        targetBag.isBurning = true;
+        targetBag.element.classList.add("burning");
+    } else if (type === 'ice') {
+        targetBag.timeLeft += 2;
+    } else if (type === 'lightning') {
+        applyChainLightning(targetBag, 35);
+    } else if (type === 'toxic') {
+        targetBag.isPoisoned = true;
+        targetBag.poisonStacks = (targetBag.poisonStacks || 0) + 1;
+        targetBag.element.classList.add("poisoned");
+    }
+}
+
+function gloveTypePrefix(type) {
+    if (type === 'fire') return "🔥 -";
+    if (type === 'ice') return "🧊 -";
+    if (type === 'lightning') return "⚡ -";
+    if (type === 'toxic') return "🧪 -";
+    return "-";
+}
+
+function gloveTypeColor(type) {
+    if (type === 'fire') return "#ff5500";
+    if (type === 'ice') return "#00d2ff";
+    if (type === 'lightning') return "#ffff00";
+    if (type === 'toxic') return "#00ff66";
+    return "white";
+}
+
 function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0) {
     if (gamePaused) return;
 
@@ -2597,7 +2731,6 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
         animateGloveToTarget(pX, pY);
     }
 
-    // BUG FIX 3: NINJA BAG FIXED COUNTDOWN/HIT HANDLING
     if (bag.isNinja) {
         bag.ninjaHitsLeft--;
         const maxLeft = Math.max(10, arena.clientWidth - bag.size - 10);
@@ -2681,7 +2814,7 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
     if (rageActive) { baseDmg *= 3; }
 
     let isCrit = Math.random() < ((10 + upgCrit * 5) / 100);
-    if (activePet === '🐱' && Math.random() < 0.15) isCrit = true;
+    if (activePets.includes('🐱') && Math.random() < 0.15) isCrit = true;
     if (isCrit) {
         baseDmg *= 2;
         totalCrits++;
@@ -2701,7 +2834,23 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
 
     applyDirectDamage(bag, Math.floor(baseDmg), "", "");
 
-    // BUG FIX 2: NO-COMBO BAG RESET LOGIC
+    // Trigger Elemental Glove Primary Effect & Additional Targets
+    if (activeGloveType !== 'standard') {
+        applyGloveEffect(bag, activeGloveType);
+        let addlCount = elementalLevels[activeGloveType] || 0;
+        if (addlCount > 0) {
+            let otherBags = activeBags.filter(b => b !== bag && !b.isBomb);
+            otherBags.sort(() => Math.random() - 0.5);
+            let targetsToHit = otherBags.slice(0, addlCount);
+
+            targetsToHit.forEach(otherBag => {
+                let extraDmg = Math.floor(baseDmg * 0.5);
+                applyDirectDamage(otherBag, extraDmg, gloveTypePrefix(activeGloveType), gloveTypeColor(activeGloveType));
+                applyGloveEffect(otherBag, activeGloveType);
+            });
+        }
+    }
+
     if (bag.isComboBreaker) {
         combo = 0;
         document.getElementById("combo").textContent = "";
@@ -2718,7 +2867,6 @@ function punch(bag, isAuto = false, bullseyeHit = false, clickX = 0, clickY = 0)
         }, 2500);
     }
 
-    // BUG FIX 1: RAINBOW BAG DROPS ITEM EVERY 5 HITS
     if (bag.isRainbow) {
         bag.rainbowHits = (bag.rainbowHits || 0) + 1;
         if (bag.rainbowHits % 5 === 0) {
