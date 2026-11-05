@@ -621,8 +621,8 @@ h1 {
     background: #14141e;
     padding: 18px;
     border-radius: 15px;
-    width: 350px;
-    max-width: 92%;
+    width: 380px;
+    max-width: 95%;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
     text-align: center;
     border: 1px solid #2d2d42;
@@ -638,6 +638,19 @@ h1 {
     cursor: pointer;
     font-weight: bold;
     font-size: 11px;
+}
+
+.modalBox button.btnActiveItem {
+    border: 2px solid #00ffcc !important;
+    background: #133a36 !important;
+    color: #00ffcc !important;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
+
+.modalBox button.btnBoughtItem {
+    border: 1px solid #aa55ff !important;
+    background: #271a3d !important;
+    color: #e0b0ff !important;
 }
 
 .upgradeRow, .statRow {
@@ -733,6 +746,17 @@ h1 {
     border-bottom: 1px solid #2a2a40;
     padding-bottom: 2px;
 }
+
+.trialBadge {
+    font-size: 9px;
+    background: #ffaa00;
+    color: #000;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 2px;
+}
 </style>
 </head>
 
@@ -791,6 +815,7 @@ h1 {
             <button id="gloveIceBtn" onclick="selectActiveGlove('ice')">🧊 Ice</button>
             <button id="gloveLightningBtn" onclick="selectActiveGlove('lightning')">⚡ Shock</button>
             <button id="gloveToxicBtn" onclick="selectActiveGlove('toxic')">🧪 Venom</button>
+            <button id="gloveCosmicBtn" onclick="selectActiveGlove('cosmic')">🌌 Cosmic (📺)</button>
             <button class="hubBtn" onclick="openUpgradesModal()">🏋️ Shop / Upgrade</button>
         </div>
 
@@ -919,6 +944,13 @@ h1 {
             </div>
             <button id="buyToxicBtn" onclick="upgradeOrBuyGlove('toxic')">2700 🪙</button>
         </div>
+        <div class="upgradeRow">
+            <div style="text-align:left">
+                <strong>Cosmic Glove (Lvl <span id="cosmicGloveLvl">1</span>/3)</strong><br>
+                <small>Gravitational Pull | High Dmg Area Blast</small>
+            </div>
+            <button id="buyCosmicBtn" onclick="handleAdTrialUnlock('glove_cosmic')">⏱️ 3-Day Trial (📺 Ad)</button>
+        </div>
 
         <h3>💖 Health Upgrades</h3>
         <div class="upgradeRow">
@@ -932,29 +964,29 @@ h1 {
         <h3>🐉 Sidekick Pets</h3>
         <button onclick="setPet('')" style="margin-bottom:6px;">❌ Unequip All Pets</button>
         
-        <div class="petCategoryHeader">🪙 COIN PETS (ELEMENTAL DAMAGE - MAX 2 SLOTS)</div>
+        <div class="petCategoryHeader">📺 ALL SIDEKICK PETS (3-DAY AD TRIAL - MAX 2 SLOTS)</div>
         <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
-            <button onclick="setPet('🐉', 3000)">🐉 Dragon (3000 🪙)<br><small>Fire Dmg</small></button>
-            <button onclick="setPet('🤖', 4500)">🤖 Drone (4500 🪙)<br><small>Shock Dmg</small></button>
-            <button onclick="setPet('🧊', 6000)">🧊 Frost Fox (6000 🪙)<br><small>Ice Dmg</small></button>
-            <button onclick="setPet('🧪', 7500)">🧪 Venom Slime (7500 🪙)<br><small>Venom Dmg</small></button>
-        </div>
-
-        <div class="petCategoryHeader">📺 ADS PETS (SLIGHTLY BETTER - MAX 2 SLOTS)</div>
-        <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
-            <button id="petDogBtn" onclick="handlePetAdUnlock('🐶')">🐶 Dog (📺 Ad)<br><small>+20% Coins</small></button>
-            <button id="petCatBtn" onclick="handlePetAdUnlock('🐱')">🐱 Cat (📺 Ad)<br><small>+15% Crit</small></button>
-            <button id="petPhoenixBtn" onclick="handlePetAdUnlock('🦅')">🦅 Phoenix (📺 Ad)<br><small>Ice + Fire Dmg</small></button>
-            <button id="petTigerBtn" onclick="handlePetAdUnlock('⚡')">⚡ Volt Tiger (📺 Ad)<br><small>Venom + Shock</small></button>
+            <button id="petDragonBtn" onclick="handleAdTrialUnlock('pet_dragon', '🐉')">🐉 Dragon (📺 Trial)<br><small>Fire Dmg</small></button>
+            <button id="petDroneBtn" onclick="handleAdTrialUnlock('pet_drone', '🤖')">🤖 Drone (📺 Trial)<br><small>Shock Dmg</small></button>
+            <button id="petFrostFoxBtn" onclick="handleAdTrialUnlock('pet_frostfox', '🧊')">🧊 Frost Fox (📺 Trial)<br><small>Ice Dmg</small></button>
+            <button id="petVenomSlimeBtn" onclick="handleAdTrialUnlock('pet_venomslime', '🧪')">🧪 Venom Slime (📺 Trial)<br><small>Venom Dmg</small></button>
+            <button id="petDogBtn" onclick="handleAdTrialUnlock('pet_dog', '🐶')">🐶 Dog (📺 Trial)<br><small>+20% Coins</small></button>
+            <button id="petCatBtn" onclick="handleAdTrialUnlock('pet_cat', '🐱')">🐱 Cat (📺 Trial)<br><small>+15% Crit</small></button>
+            <button id="petPhoenixBtn" onclick="handleAdTrialUnlock('pet_phoenix', '🦅')">🦅 Phoenix (📺 Trial)<br><small>Ice + Fire Dmg</small></button>
+            <button id="petTigerBtn" onclick="handleAdTrialUnlock('pet_tiger', '⚡')">⚡ Volt Tiger (📺 Trial)<br><small>Venom + Shock</small></button>
+            <button id="petUnicornBtn" onclick="handleAdTrialUnlock('pet_unicorn', '🦄')">🦄 Unicorn (📺 Trial)<br><small>+0.5 HP Punch Heal</small></button>
+            <button id="petHydraBtn" onclick="handleAdTrialUnlock('pet_hydra', '🐲')">🐲 Hydra (📺 Trial)<br><small>Tri-Elemental Strike</small></button>
         </div>
 
         <h3>🕶️ Wardrobe Cosmetics</h3>
-        <div style="display:flex; justify-content:space-around; flex-wrap:wrap; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
             <button onclick="setHat('')">❌ None</button>
-            <button onclick="setHat('😎')">😎 Shades</button>
-            <button onclick="setHat('👑')">👑 Crown</button>
-            <button onclick="setHat('😈')">😈 Horns</button>
-            <button onclick="setHat('🎭')">🎭 Mask</button>
+            <button id="hatShadesBtn" onclick="handleAdTrialUnlock('hat_shades', '😎')">😎 Shades (📺 Trial)</button>
+            <button id="hatCrownBtn" onclick="handleAdTrialUnlock('hat_crown', '👑')">👑 Crown (📺 Trial)</button>
+            <button id="hatHornsBtn" onclick="handleAdTrialUnlock('hat_horns', '😈')">😈 Horns (📺 Trial)</button>
+            <button id="hatMaskBtn" onclick="handleAdTrialUnlock('hat_mask', '🎭')">🎭 Mask (📺 Trial)</button>
+            <button id="hatNinjaBtn" onclick="handleAdTrialUnlock('hat_ninja', '🥷')">🥷 Ninja Mask (📺 Trial)<br><small>+15% Dodge</small></button>
+            <button id="hatWizardBtn" onclick="handleAdTrialUnlock('hat_wizard', '🧙')">🧙 Wizard Hat (📺 Trial)<br><small>+50% DoT Time</small></button>
         </div>
 
         <h3>💪 Upgrades</h3>
@@ -1170,6 +1202,29 @@ let petPhoenixUnlocked = localStorage.petPhoenixUnlocked === "true";
 let petTigerUnlocked = localStorage.petTigerUnlocked === "true";
 let pendingAdPet = "";
 
+// 3-DAY AD TRIAL EXPIRATION DATES (Timestamps in ms)
+let adTrials = {
+    pet_dragon: Number(localStorage.trial_pet_dragon) || 0,
+    pet_drone: Number(localStorage.trial_pet_drone) || 0,
+    pet_frostfox: Number(localStorage.trial_pet_frostfox) || 0,
+    pet_venomslime: Number(localStorage.trial_pet_venomslime) || 0,
+    pet_dog: Number(localStorage.trial_pet_dog) || 0,
+    pet_cat: Number(localStorage.trial_pet_cat) || 0,
+    pet_phoenix: Number(localStorage.trial_pet_phoenix) || 0,
+    pet_tiger: Number(localStorage.trial_pet_tiger) || 0,
+    pet_unicorn: Number(localStorage.trial_pet_unicorn) || 0,
+    pet_hydra: Number(localStorage.trial_pet_hydra) || 0,
+    hat_shades: Number(localStorage.trial_hat_shades) || 0,
+    hat_crown: Number(localStorage.trial_hat_crown) || 0,
+    hat_horns: Number(localStorage.trial_hat_horns) || 0,
+    hat_mask: Number(localStorage.trial_hat_mask) || 0,
+    hat_ninja: Number(localStorage.trial_hat_ninja) || 0,
+    hat_wizard: Number(localStorage.trial_hat_wizard) || 0,
+    glove_cosmic: Number(localStorage.trial_glove_cosmic) || 0
+};
+let pendingTrialItem = "";
+let pendingTargetSymbol = "";
+
 let weeklyHighScore = Number(localStorage.weeklyHighScore) || 0;
 let monthlyHighScore = Number(localStorage.monthlyHighScore) || 0;
 let activeLeaderboardTab = 'weekly';
@@ -1194,7 +1249,7 @@ let upgAuto = Number(localStorage.upgAuto) || 0;
 let upgMagnet = Number(localStorage.upgMagnet) || 0;
 let gloveSkin = localStorage.gloveSkin || "🥊";
 
-let ownedGloves = { standard: true, fire: false, ice: false, lightning: false, toxic: false };
+let ownedGloves = { standard: true, fire: false, ice: false, lightning: false, toxic: false, cosmic: false };
 if (localStorage.ownedGloves) {
     try { ownedGloves = JSON.parse(localStorage.ownedGloves); } catch(e){}
 }
@@ -1204,7 +1259,8 @@ let elementalLevels = {
     fire: Number(localStorage.fireGloveLvl) || 0,
     ice: Number(localStorage.iceGloveLvl) || 0,
     lightning: Number(localStorage.lightningGloveLvl) || 0,
-    toxic: Number(localStorage.toxicGloveLvl) || 0
+    toxic: Number(localStorage.toxicGloveLvl) || 0,
+    cosmic: Number(localStorage.cosmicGloveLvl) || 1
 };
 
 let artifacts = {
@@ -1247,6 +1303,25 @@ let currentQuestIndex = 0;
 const arena = document.getElementById("arena");
 const bagsContainer = document.getElementById("bags");
 const glove = document.getElementById("glove");
+
+function isTrialActive(key) {
+    return adTrials[key] && Date.now() < adTrials[key];
+}
+
+function getTrialTimeLeft(key) {
+    if (!isTrialActive(key)) return "";
+    let diff = adTrials[key] - Date.now();
+    let hrs = Math.floor(diff / (1000 * 60 * 60));
+    let mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hrs}h ${mins}m left`;
+}
+
+// Validate active features on launch
+if (isTrialActive('glove_cosmic')) ownedGloves.cosmic = true;
+else if (adTrials.glove_cosmic && Date.now() >= adTrials.glove_cosmic) {
+    ownedGloves.cosmic = false;
+    if (activeGloveType === 'cosmic') activeGloveType = 'standard';
+}
 
 setTheme(currentTheme);
 setPetUI();
@@ -1364,6 +1439,16 @@ function gameLoop(now) {
                             randomBag.isPoisoned = true;
                             randomBag.poisonStacks = (randomBag.poisonStacks || 0) + 1;
                             randomBag.element.classList.add("poisoned");
+                        } else if (pet === '🦄') {
+                            popup("🦄 HEALING AURA!", "#ff00ff", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            hearts = Math.min(maxHearts, hearts + 0.5);
+                            updateHearts();
+                        } else if (pet === '🐲') {
+                            popup("🐲 TRI-ELEMENT STRIKE!", "#ff00aa", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
+                            randomBag.timeLeft += 2;
+                            randomBag.isBurning = true;
+                            randomBag.isPoisoned = true;
+                            randomBag.element.classList.add("burning", "poisoned");
                         } else {
                             popup(pet + " ATTACK!", "orange", rect.left - arenaRect.left, rect.top - arenaRect.top - 10);
                         }
@@ -1445,7 +1530,8 @@ function updateBagTimers(dt) {
                 let burnDmg = Math.max(5, Math.floor(bag.maxHp * 0.05));
                 applyDirectDamage(bag, burnDmg, "🔥 -", "#ff5500");
                 bag.burnTicks = (bag.burnTicks || 0) + 1;
-                if (bag.burnTicks >= 4) {
+                let maxBurnTicks = (activeHat === '🧙' && isTrialActive('hat_wizard')) ? 6 : 4;
+                if (bag.burnTicks >= maxBurnTicks) {
                     bag.isBurning = false;
                     bag.element.classList.remove("burning");
                 }
@@ -1459,7 +1545,8 @@ function updateBagTimers(dt) {
                 let poisonDmg = Math.max(4, Math.floor(bag.maxHp * 0.04)) * (bag.poisonStacks || 1);
                 applyDirectDamage(bag, poisonDmg, "🧪 -", "#00ff66");
                 bag.poisonTicks = (bag.poisonTicks || 0) + 1;
-                if (bag.poisonTicks >= 5) {
+                let maxPoisonTicks = (activeHat === '🧙' && isTrialActive('hat_wizard')) ? 8 : 5;
+                if (bag.poisonTicks >= maxPoisonTicks) {
                     bag.isPoisoned = false;
                     bag.element.classList.remove("poisoned");
                 }
@@ -1479,11 +1566,15 @@ function updateBagTimers(dt) {
             const arenaRect = arena.getBoundingClientRect();
 
             if (!bag.isBomb) {
-                let heartLoss = (bag.isGolden || bag.isRainbow || bag.isHighTier || bag.isBoss || bag.isNinja || bag.isBouncy || bag.isSplitter || bag.isHealer) ? 1 : 1.5;
-                popup(`💔 ${heartLoss} HEART${heartLoss > 1 ? 'S' : ''} LOST`, "red", rect.left - arenaRect.left, rect.top - arenaRect.top);
-                hearts = Math.max(0, hearts - heartLoss);
-                flashDamage();
-                updateHearts();
+                if (activeHat === '🥷' && isTrialActive('hat_ninja') && Math.random() < 0.15) {
+                    popup("🥷 DODGED LOSS!", "#00ffcc", rect.left - arenaRect.left, rect.top - arenaRect.top);
+                } else {
+                    let heartLoss = (bag.isGolden || bag.isRainbow || bag.isHighTier || bag.isBoss || bag.isNinja || bag.isBouncy || bag.isSplitter || bag.isHealer) ? 1 : 1.5;
+                    popup(`💔 ${heartLoss} HEART${heartLoss > 1 ? 'S' : ''} LOST`, "red", rect.left - arenaRect.left, rect.top - arenaRect.top);
+                    hearts = Math.max(0, hearts - heartLoss);
+                    flashDamage();
+                    updateHearts();
+                }
             } else {
                 popup("💨 BOMB EXPIRED", "gray", rect.left - arenaRect.left, rect.top - arenaRect.top);
             }
@@ -1546,8 +1637,13 @@ function saveGame() {
     localStorage.iceGloveLvl = elementalLevels.ice;
     localStorage.lightningGloveLvl = elementalLevels.lightning;
     localStorage.toxicGloveLvl = elementalLevels.toxic;
+    localStorage.cosmicGloveLvl = elementalLevels.cosmic;
     localStorage.achievements = JSON.stringify(achievements);
     localStorage.artifacts = JSON.stringify(artifacts);
+
+    Object.keys(adTrials).forEach(k => {
+        localStorage['trial_' + k] = adTrials[k];
+    });
 
     if (score > highScore) { highScore = score; localStorage.highScore = highScore; }
     if (score > weeklyHighScore) { weeklyHighScore = score; localStorage.weeklyHighScore = weeklyHighScore; }
@@ -1555,6 +1651,10 @@ function saveGame() {
 }
 
 function selectActiveGlove(type) {
+    if (type === 'cosmic' && !isTrialActive('glove_cosmic')) {
+        popup("🔒 Unlock 3-Day Ad Trial in Arcade Hub!", "orange", arena.clientWidth / 2 - 120, 50);
+        return;
+    }
     if (!ownedGloves[type]) {
         popup("🔒 Unlock in Arcade Hub!", "red", arena.clientWidth / 2 - 90, 50);
         return;
@@ -1577,6 +1677,9 @@ function selectActiveGlove(type) {
     } else if (type === 'toxic') {
         document.getElementById("gloveToxicBtn").classList.add("activeGlove");
         glove.textContent = "🧪";
+    } else if (type === 'cosmic') {
+        document.getElementById("gloveCosmicBtn").classList.add("activeGlove");
+        glove.textContent = "🌌";
     }
     saveGame();
 }
@@ -1628,35 +1731,40 @@ function setTheme(theme) {
 }
 
 function setHat(hat) {
-    activeHat = hat;
-    document.querySelectorAll(".hatOverlay").forEach(el => el.textContent = hat);
+    if (hat !== "" && hat !== activeHat) {
+        activeHat = hat;
+        popup("🎭 WARDROBE EQUIPPED!", "#00ffcc", arena.clientWidth / 2 - 110, 50);
+    } else if (hat === activeHat && hat !== "") {
+        activeHat = "";
+        popup("❌ Wardrobe Unequipped", "orange", arena.clientWidth / 2 - 100, 50);
+    } else {
+        activeHat = "";
+    }
+    document.querySelectorAll(".hatOverlay").forEach(el => el.textContent = activeHat);
+    updateUpgradesUI();
     saveGame();
 }
 
-function setPet(pet, cost = 0) {
+function setPet(pet) {
     if (pet === "") {
         activePets = [];
         setPetUI();
         saveGame();
         updateScoreboard();
+        updateUpgradesUI();
         return;
     }
 
     if (activePets.includes(pet)) {
         activePets = activePets.filter(p => p !== pet);
+        popup(pet + " Unequipped", "orange", arena.clientWidth / 2 - 80, 50);
     } else {
         if (activePets.length >= 2) {
             popup("❌ Max 2 Pets Equipped!", "red", arena.clientWidth / 2 - 80, 50);
             return;
         }
-        if (cost > 0) {
-            if (coins < cost) {
-                popup("❌ Need " + cost + " Coins!", "red", arena.clientWidth / 2 - 70, 50);
-                return;
-            }
-            coins -= cost;
-        }
         activePets.push(pet);
+        popup(pet + " Equipped!", "#00ff88", arena.clientWidth / 2 - 80, 50);
     }
 
     setPetUI();
@@ -1665,25 +1773,22 @@ function setPet(pet, cost = 0) {
     updateUpgradesUI();
 }
 
-function handlePetAdUnlock(pet) {
-    if (pet === '🐶') {
-        if (petDogUnlocked) setPet('🐶');
-        else { pendingAdPet = '🐶'; startAdSimulator(); }
-    } else if (pet === '🐱') {
-        if (petCatUnlocked) setPet('🐱');
-        else { pendingAdPet = '🐱'; startAdSimulator(); }
-    } else if (pet === '🦅') {
-        if (petPhoenixUnlocked) setPet('🦅');
-        else { pendingAdPet = '🦅'; startAdSimulator(); }
-    } else if (pet === '⚡') {
-        if (petTigerUnlocked) setPet('⚡');
-        else { pendingAdPet = '⚡'; startAdSimulator(); }
+function handleAdTrialUnlock(itemKey, symbol = "") {
+    if (isTrialActive(itemKey)) {
+        if (itemKey.startsWith("pet_")) {
+            setPet(symbol);
+        } else if (itemKey.startsWith("hat_")) {
+            setHat(symbol);
+        } else if (itemKey === "glove_cosmic") {
+            selectActiveGlove('cosmic');
+        }
+        return;
     }
-}
 
-function startAdSimulator() {
-    document.getElementById("adTitle").textContent = "📺 Watching Ad...";
-    document.getElementById("adSub").textContent = "Please wait to unlock your Pet!";
+    pendingTrialItem = itemKey;
+    pendingTargetSymbol = symbol;
+    document.getElementById("adTitle").textContent = "📺 Watching 3-Day Trial Ad...";
+    document.getElementById("adSub").textContent = "Please wait to activate your 3-Day Free Trial!";
     document.getElementById("adCloseBtn").style.display = "none";
     document.getElementById("adProgressBar").style.width = "0%";
     document.getElementById("adModal").style.display = "flex";
@@ -1695,7 +1800,7 @@ function startAdSimulator() {
         if (progress >= 100) {
             clearInterval(interval);
             document.getElementById("adTitle").textContent = "🎉 Ad Complete!";
-            document.getElementById("adSub").textContent = "Click below to claim your new pet!";
+            document.getElementById("adSub").textContent = "Click below to claim your 3-Day Trial!";
             document.getElementById("adCloseBtn").style.display = "inline-block";
         }
     }, 300);
@@ -1703,24 +1808,29 @@ function startAdSimulator() {
 
 function finishAd() {
     document.getElementById("adModal").style.display = "none";
-    if (pendingAdPet === '🐶') {
-        petDogUnlocked = true;
-        setPet('🐶');
-        popup("🐶 DOG UNLOCKED! (+20% COINS)", "#00ff88", arena.clientWidth / 2 - 120, 50);
-    } else if (pendingAdPet === '🐱') {
-        petCatUnlocked = true;
-        setPet('🐱');
-        popup("🐱 CAT UNLOCKED! (+15% CRIT RATE)", "#00ff88", arena.clientWidth / 2 - 120, 50);
-    } else if (pendingAdPet === '🦅') {
-        petPhoenixUnlocked = true;
-        setPet('🦅');
-        popup("🦅 PHOENIX UNLOCKED! (ICE + FIRE)", "#00ff88", arena.clientWidth / 2 - 120, 50);
-    } else if (pendingAdPet === '⚡') {
-        petTigerUnlocked = true;
-        setPet('⚡');
-        popup("⚡ VOLT TIGER UNLOCKED! (VENOM + SHOCK)", "#00ff88", arena.clientWidth / 2 - 140, 50);
+
+    if (pendingTrialItem) {
+        let threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+        adTrials[pendingTrialItem] = Date.now() + threeDaysMs;
+
+        if (pendingTrialItem.startsWith("pet_")) {
+            setPet(pendingTargetSymbol);
+            popup("🐾 3-DAY PET TRIAL UNLOCKED!", "#00ff88", arena.clientWidth / 2 - 140, 50);
+        } else if (pendingTrialItem.startsWith("hat_")) {
+            setHat(pendingTargetSymbol);
+            popup("🕶️ 3-DAY WARDROBE TRIAL UNLOCKED!", "#00ffcc", arena.clientWidth / 2 - 150, 50);
+        } else if (pendingTrialItem === 'glove_cosmic') {
+            ownedGloves.cosmic = true;
+            selectActiveGlove('cosmic');
+            popup("🌌 COSMIC GLOVE 3-DAY TRIAL UNLOCKED!", "#aa00ff", arena.clientWidth / 2 - 150, 50);
+        }
+        pendingTrialItem = "";
+        pendingTargetSymbol = "";
+        updateUpgradesUI();
+        saveGame();
+        return;
     }
-    pendingAdPet = "";
+
     updateUpgradesUI();
     saveGame();
 }
@@ -1954,14 +2064,15 @@ function confirmNewGame() {
     upgMagnet = 0;
     gloveSkin = "🥊";
     activeGloveType = "standard";
-    ownedGloves = { standard: true, fire: false, ice: false, lightning: false, toxic: false };
-    elementalLevels = { fire: 0, ice: 0, lightning: 0, toxic: 0 };
+    ownedGloves = { standard: true, fire: false, ice: false, lightning: false, toxic: false, cosmic: false };
+    elementalLevels = { fire: 0, ice: 0, lightning: 0, toxic: 0, cosmic: 1 };
     activeHat = "";
     activePets = [];
     petDogUnlocked = false;
     petCatUnlocked = false;
     petPhoenixUnlocked = false;
     petTigerUnlocked = false;
+    adTrials = {};
     
     freezeActive = false;
     rageActive = false;
@@ -2102,11 +2213,32 @@ function toggleArtifact(key) {
     saveGame();
 }
 
+function renderItemButtonState(btnId, trialKey, symbol, titleText, descText, type = "pet") {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+
+    let isUnlocked = isTrialActive(trialKey);
+    let isEquipped = (type === "pet") ? activePets.includes(symbol) : (activeHat === symbol);
+
+    btn.classList.remove("btnActiveItem", "btnBoughtItem");
+
+    if (isEquipped) {
+        btn.classList.add("btnActiveItem");
+        btn.innerHTML = `${symbol} ${titleText} (✅ ACTIVE)<br><span class="trialBadge">${getTrialTimeLeft(trialKey)}</span>`;
+    } else if (isUnlocked) {
+        btn.classList.add("btnBoughtItem");
+        btn.innerHTML = `${symbol} ${titleText} (✓ UNLOCKED)<br><span class="trialBadge">${getTrialTimeLeft(trialKey)}</span>`;
+    } else {
+        btn.innerHTML = `${symbol} ${titleText} (📺 3-Day Trial)<br><small>${descText}</small>`;
+    }
+}
+
 function updateUpgradesUI() {
     const buyFireBtn = document.getElementById("buyFireBtn");
     const buyIceBtn = document.getElementById("buyIceBtn");
     const buyLightningBtn = document.getElementById("buyLightningBtn");
     const buyToxicBtn = document.getElementById("buyToxicBtn");
+    const buyCosmicBtn = document.getElementById("buyCosmicBtn");
 
     document.getElementById("fireGloveLvl").textContent = Math.max(1, elementalLevels.fire);
     document.getElementById("fireHitCount").textContent = elementalLevels.fire;
@@ -2124,15 +2256,35 @@ function updateUpgradesUI() {
     document.getElementById("toxicHitCount").textContent = elementalLevels.toxic;
     buyToxicBtn.textContent = !ownedGloves.toxic ? "2700 🪙" : (elementalLevels.toxic >= 3 ? "⭐ MAX" : ((elementalLevels.toxic + 1) * 1500) + " 🪙 Upgr");
 
-    const petDogBtn = document.getElementById("petDogBtn");
-    const petCatBtn = document.getElementById("petCatBtn");
-    const petPhoenixBtn = document.getElementById("petPhoenixBtn");
-    const petTigerBtn = document.getElementById("petTigerBtn");
+    if (buyCosmicBtn) {
+        if (activeGloveType === 'cosmic') {
+            buyCosmicBtn.innerHTML = `✅ ACTIVE<br><span class="trialBadge">${getTrialTimeLeft('glove_cosmic')}</span>`;
+        } else if (isTrialActive('glove_cosmic')) {
+            buyCosmicBtn.innerHTML = `✓ UNLOCKED<br><span class="trialBadge">${getTrialTimeLeft('glove_cosmic')}</span>`;
+        } else {
+            buyCosmicBtn.innerHTML = "⏱️ 3-Day Trial (📺 Ad)";
+        }
+    }
 
-    if (petDogBtn) petDogBtn.innerHTML = (petDogUnlocked ? "🐶 Dog (+20% Coins)" : "🐶 Dog (📺 Ad)") + "<br><small>+20% Coins</small>";
-    if (petCatBtn) petCatBtn.innerHTML = (petCatUnlocked ? "🐱 Cat (+15% Crit)" : "🐱 Cat (📺 Ad)") + "<br><small>+15% Crit</small>";
-    if (petPhoenixBtn) petPhoenixBtn.innerHTML = (petPhoenixUnlocked ? "🦅 Phoenix (Owned)" : "🦅 Phoenix (📺 Ad)") + "<br><small>Ice + Fire Dmg</small>";
-    if (petTigerBtn) petTigerBtn.innerHTML = (petTigerUnlocked ? "⚡ Volt Tiger (Owned)" : "⚡ Volt Tiger (📺 Ad)") + "<br><small>Venom + Shock</small>";
+    // Render Pets
+    renderItemButtonState("petDragonBtn", "pet_dragon", "🐉", "Dragon", "Fire Dmg");
+    renderItemButtonState("petDroneBtn", "pet_drone", "🤖", "Drone", "Shock Dmg");
+    renderItemButtonState("petFrostFoxBtn", "pet_frostfox", "🧊", "Frost Fox", "Ice Dmg");
+    renderItemButtonState("petVenomSlimeBtn", "pet_venomslime", "🧪", "Venom Slime", "Venom Dmg");
+    renderItemButtonState("petDogBtn", "pet_dog", "🐶", "Dog", "+20% Coins");
+    renderItemButtonState("petCatBtn", "pet_cat", "🐱", "Cat", "+15% Crit");
+    renderItemButtonState("petPhoenixBtn", "pet_phoenix", "🦅", "Phoenix", "Ice + Fire Dmg");
+    renderItemButtonState("petTigerBtn", "pet_tiger", "⚡", "Volt Tiger", "Venom + Shock");
+    renderItemButtonState("petUnicornBtn", "pet_unicorn", "🦄", "Unicorn", "+0.5 HP Punch Heal");
+    renderItemButtonState("petHydraBtn", "pet_hydra", "🐲", "Hydra", "Tri-Elemental Strike");
+
+    // Render Wardrobe Cosmetics
+    renderItemButtonState("hatShadesBtn", "hat_shades", "😎", "Shades", "Cool Look", "hat");
+    renderItemButtonState("hatCrownBtn", "hat_crown", "👑", "Crown", "Royalty Look", "hat");
+    renderItemButtonState("hatHornsBtn", "hat_horns", "😈", "Horns", "Demon Look", "hat");
+    renderItemButtonState("hatMaskBtn", "hat_mask", "🎭", "Mask", "Mysterious Look", "hat");
+    renderItemButtonState("hatNinjaBtn", "hat_ninja", "🥷", "Ninja Mask", "+15% Dodge", "hat");
+    renderItemButtonState("hatWizardBtn", "hat_wizard", "🧙", "Wizard Hat", "+50% DoT Time", "hat");
 
     document.getElementById("basePwrLvl").textContent = upgPower + 1;
     document.getElementById("basePwrBonus").textContent = upgPower * 5;
@@ -2692,6 +2844,18 @@ function applyGloveEffect(targetBag, type) {
         targetBag.isPoisoned = true;
         targetBag.poisonStacks = (targetBag.poisonStacks || 0) + 1;
         targetBag.element.classList.add("poisoned");
+    } else if (type === 'cosmic') {
+        // Gravitational Pull towards center target
+        let curLeft = parseFloat(targetBag.element.style.left);
+        let curTop = parseFloat(targetBag.element.style.top);
+        activeBags.forEach(other => {
+            if (other !== targetBag) {
+                let oLeft = parseFloat(other.element.style.left);
+                let oTop = parseFloat(other.element.style.top);
+                other.element.style.left = (oLeft + (curLeft - oLeft) * 0.4) + "px";
+                other.element.style.top = (oTop + (curTop - oTop) * 0.4) + "px";
+            }
+        });
     }
 }
 
@@ -2700,6 +2864,7 @@ function gloveTypePrefix(type) {
     if (type === 'ice') return "🧊 -";
     if (type === 'lightning') return "⚡ -";
     if (type === 'toxic') return "🧪 -";
+    if (type === 'cosmic') return "🌌 -";
     return "-";
 }
 
@@ -2708,6 +2873,7 @@ function gloveTypeColor(type) {
     if (type === 'ice') return "#00d2ff";
     if (type === 'lightning') return "#ffff00";
     if (type === 'toxic') return "#00ff66";
+    if (type === 'cosmic') return "#aa00ff";
     return "white";
 }
 
